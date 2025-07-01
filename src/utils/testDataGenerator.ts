@@ -3,12 +3,12 @@
 // Gerar CNPJ válido
 export function generateValidCNPJ(): string {
   const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  const weights2 = [6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9];
+  const weights2 = [6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2];
   
-  // Gerar primeiros 8 dígitos (base)
+  // Gerar primeiros 8 dígitos (base) - evitando sequências problemáticas
   let cnpj = '';
   for (let i = 0; i < 8; i++) {
-    cnpj += Math.floor(Math.random() * 10);
+    cnpj += Math.floor(Math.random() * 10).toString();
   }
   
   // Adicionar sequência 0001 (filial)
@@ -17,20 +17,33 @@ export function generateValidCNPJ(): string {
   // Calcular primeiro dígito verificador
   let sum = 0;
   for (let i = 0; i < 12; i++) {
-    sum += parseInt(cnpj[i]) * weights1[i];
+    const digit = parseInt(cnpj[i]);
+    if (isNaN(digit)) {
+      throw new Error('Invalid digit generated in CNPJ');
+    }
+    sum += digit * weights1[i];
   }
   let digit1 = sum % 11;
   digit1 = digit1 < 2 ? 0 : 11 - digit1;
-  cnpj += digit1;
+  cnpj += String(digit1);
   
   // Calcular segundo dígito verificador
   sum = 0;
   for (let i = 0; i < 13; i++) {
-    sum += parseInt(cnpj[i]) * weights2[i];
+    const digit = parseInt(cnpj[i]);
+    if (isNaN(digit)) {
+      throw new Error('Invalid digit generated in CNPJ');
+    }
+    sum += digit * weights2[i];
   }
   let digit2 = sum % 11;
   digit2 = digit2 < 2 ? 0 : 11 - digit2;
-  cnpj += digit2;
+  cnpj += String(digit2);
+  
+  // Verificação final
+  if (cnpj.length !== 14 || !/^\d{14}$/.test(cnpj)) {
+    throw new Error('Generated CNPJ is invalid: ' + cnpj);
+  }
   
   return cnpj;
 }
@@ -40,26 +53,39 @@ export function generateValidCPF(): string {
   // Gerar primeiros 9 dígitos
   let cpf = '';
   for (let i = 0; i < 9; i++) {
-    cpf += Math.floor(Math.random() * 10);
+    cpf += Math.floor(Math.random() * 10).toString();
   }
   
   // Calcular primeiro dígito verificador
   let sum = 0;
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(cpf[i]) * (10 - i);
+    const digit = parseInt(cpf[i]);
+    if (isNaN(digit)) {
+      throw new Error('Invalid digit generated in CPF');
+    }
+    sum += digit * (10 - i);
   }
   let digit1 = sum % 11;
   digit1 = digit1 < 2 ? 0 : 11 - digit1;
-  cpf += digit1;
+  cpf += String(digit1);
   
   // Calcular segundo dígito verificador
   sum = 0;
   for (let i = 0; i < 10; i++) {
-    sum += parseInt(cpf[i]) * (11 - i);
+    const digit = parseInt(cpf[i]);
+    if (isNaN(digit)) {
+      throw new Error('Invalid digit generated in CPF');
+    }
+    sum += digit * (11 - i);
   }
   let digit2 = sum % 11;
   digit2 = digit2 < 2 ? 0 : 11 - digit2;
-  cpf += digit2;
+  cpf += String(digit2);
+  
+  // Verificação final
+  if (cpf.length !== 11 || !/^\d{11}$/.test(cpf)) {
+    throw new Error('Generated CPF is invalid: ' + cpf);
+  }
   
   return cpf;
 }

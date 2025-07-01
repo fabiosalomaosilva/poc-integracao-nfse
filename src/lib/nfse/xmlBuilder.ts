@@ -82,7 +82,12 @@ export class XMLBuilder {
 
   // Adiciona número formatado com decimais
   addNumber(tagName: string, value?: number, decimals = 2): XMLBuilder {
-    if (value !== undefined && value !== null && !isNaN(value)) {
+    if (value !== undefined && value !== null && !isNaN(value) && isFinite(value)) {
+      // Verificar se não é um valor muito grande que pode causar problemas
+      if (Math.abs(value) > 1e15) {
+        console.warn(`Very large number detected for ${tagName}:`, value);
+        return this;
+      }
       return this.addElement(tagName, value.toFixed(decimals));
     }
     return this;
@@ -91,8 +96,8 @@ export class XMLBuilder {
   // Adiciona data formatada
   addDate(tagName: string, date?: string): XMLBuilder {
     if (date && date.trim()) {
-      // Garantir formato correto da data
-      const formattedDate = date.includes('T') ? date : `${date}T00:00:00-03:00`;
+      // Usar a função de formatação que já trata timezone corretamente
+      const formattedDate = XMLUtils.formatDate(date);
       return this.addElement(tagName, formattedDate);
     }
     return this;
@@ -221,9 +226,23 @@ export class XMLUtils {
   }
 
   static formatCNPJCPF(value: string): string {
-    if (!value) return '';
+    if (!value || typeof value !== 'string') return '';
+    
     // Remove qualquer formatação e mantém apenas números
-    return value.replace(/\D/g, '');
+    const clean = value.replace(/\D/g, '');
+    
+    // Validar que não contém 'NaN' ou caracteres inválidos
+    if (clean.includes('NaN') || !/^\d*$/.test(clean)) {
+      console.warn('Invalid CNPJ/CPF detected:', value);
+      return '';
+    }
+    
+    // Validar comprimento básico (11 para CPF, 14 para CNPJ)
+    if (clean.length !== 11 && clean.length !== 14 && clean.length > 0) {
+      console.warn('Invalid CNPJ/CPF length:', clean);
+    }
+    
+    return clean;
   }
 
   static formatCEP(value: string): string {

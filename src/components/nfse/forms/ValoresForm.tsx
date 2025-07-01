@@ -1,7 +1,8 @@
 'use client';
 
-// import { useState } from 'react';
+import { useCallback } from 'react';
 import { InputField, SelectField, CheckboxField, FieldGroup } from '../../ui/FormField';
+import { FocusStableNumeric } from '../../ui/FocusStableNumeric';
 import { SubTabs } from '../../ui/Tabs';
 import { ValoresCompletos } from '../../../types/nfse/complete';
 
@@ -11,12 +12,12 @@ interface ValoresFormProps {
 }
 
 export default function ValoresForm({ data, onChange }: ValoresFormProps) {
-  const updateField = (field: string, value: any) => {
+  const updateField = useCallback((field: string, value: any) => {
     const newData = { ...data, [field]: value };
     onChange(newData);
-  };
+  }, [data, onChange]);
 
-  const updateNestedField = (section: string, field: string, value: any) => {
+  const updateNestedField = useCallback((section: string, field: string, value: any) => {
     const newData = {
       ...data,
       [section]: {
@@ -25,9 +26,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
       }
     };
     onChange(newData);
-  };
+  }, [data, onChange]);
 
-  const updateDeepNestedField = (section: string, subsection: string, field: string, value: any) => {
+  const updateDeepNestedField = useCallback((section: string, subsection: string, field: string, value: any) => {
     const newData = {
       ...data,
       [section]: {
@@ -39,7 +40,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
       }
     };
     onChange(newData);
-  };
+  }, [data, onChange]);
 
   // Estados para controlar quais seções estão ativas
   const hasDescontos = !!data.vDescCondIncond;
@@ -50,7 +51,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
   const hasExigibilidadeSuspensa = !!data.trib.tribMun.exigSusp;
   const hasPisCofins = !!data.trib.tribFed?.piscofins;
 
-  const toggleSection = (section: string, ativo: boolean) => {
+  const toggleSection = useCallback((section: string, ativo: boolean) => {
     if (ativo) {
       switch (section) {
         case 'vDescCondIncond':
@@ -105,10 +106,10 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         onChange(newData);
       }
     }
-  };
+  }, [data, onChange, updateField, updateNestedField, updateDeepNestedField]);
 
   // Função para calcular valores automaticamente
-  const calcularValores = () => {
+  const calcularValores = useCallback(() => {
     const vServ = data.vServPrest.vServ || 0;
     const vDescIncond = data.vDescCondIncond?.vDescIncond || 0;
     const vDescCond = data.vDescCondIncond?.vDescCond || 0;
@@ -123,7 +124,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
     updateDeepNestedField('trib', 'tribMun', 'vBC', vBC);
     updateDeepNestedField('trib', 'tribMun', 'vISS', vISS);
     updateField('vLiq', vLiq);
-  };
+  }, [data, updateDeepNestedField, updateField]);
 
   // Tab 1: Valores do Serviço
   const ValoresServicoTab = () => (
@@ -132,32 +133,22 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
       description="Valores básicos relacionados ao serviço"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <InputField
+        <FocusStableNumeric
           label="Valor do Serviço"
           name="vServ"
-          type="number"
-          step="0.01"
-          min="0"
-          value={data.vServPrest.vServ || ''}
-          onChange={(value) => {
-            const numValue = value === '' ? 0 : parseFloat(value) || 0;
-            updateNestedField('vServPrest', 'vServ', numValue);
-          }}
+          value={data.vServPrest.vServ}
+          onChange={(value) => updateNestedField('vServPrest', 'vServ', value || 0)}
           required
+          min={0}
           help="Valor total do serviço prestado"
         />
 
-        <InputField
+        <FocusStableNumeric
           label="Valor Recebido pelo Intermediário"
           name="vReceb"
-          type="number"
-          step="0.01"
-          min="0"
-          value={data.vServPrest.vReceb || ''}
-          onChange={(value) => {
-            const numValue = value === '' ? undefined : parseFloat(value) || undefined;
-            updateNestedField('vServPrest', 'vReceb', numValue);
-          }}
+          value={data.vServPrest.vReceb}
+          onChange={(value) => updateNestedField('vServPrest', 'vReceb', value)}
+          min={0}
           help="Valor que o intermediário recebe (se houver)"
         />
       </div>
@@ -194,31 +185,21 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           description="Valores de desconto aplicados ao serviço"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField
+            <FocusStableNumeric
               label="Desconto Incondicional"
               name="vDescIncond"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.vDescCondIncond.vDescIncond || ''}
-              onChange={(value) => {
-                const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                updateNestedField('vDescCondIncond', 'vDescIncond', numValue);
-              }}
+              value={data.vDescCondIncond.vDescIncond}
+              onChange={(value) => updateNestedField('vDescCondIncond', 'vDescIncond', value || 0)}
+              min={0}
               help="Desconto garantido independente de condições"
             />
 
-            <InputField
+            <FocusStableNumeric
               label="Desconto Condicional"
               name="vDescCond"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.vDescCondIncond.vDescCond || ''}
-              onChange={(value) => {
-                const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                updateNestedField('vDescCondIncond', 'vDescCond', numValue);
-              }}
+              value={data.vDescCondIncond.vDescCond}
+              onChange={(value) => updateNestedField('vDescCondIncond', 'vDescCond', value || 0)}
+              min={0}
               help="Desconto condicionado a critérios específicos"
             />
           </div>
@@ -244,40 +225,34 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           description="Valores ou percentuais de dedução aplicados"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField
+            <FocusStableNumeric
               label="Percentual de Dedução/Redução (%)"
               name="pDR"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.vDedRed.pDR || ''}
+              value={data.vDedRed.pDR}
               onChange={(value) => {
-                const numValue = value === '' ? undefined : parseFloat(value) || undefined;
-                updateNestedField('vDedRed', 'pDR', numValue);
+                updateNestedField('vDedRed', 'pDR', value);
                 // Limpar valor se percentual for definido
                 if (value) {
                   updateNestedField('vDedRed', 'vDR', undefined);
                 }
               }}
+              min={0}
+              max={100}
               help="Percentual de dedução sobre o valor do serviço"
             />
 
-            <InputField
+            <FocusStableNumeric
               label="Valor da Dedução/Redução"
               name="vDR"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.vDedRed.vDR || ''}
+              value={data.vDedRed.vDR}
               onChange={(value) => {
-                const numValue = value === '' ? undefined : parseFloat(value) || undefined;
-                updateNestedField('vDedRed', 'vDR', numValue);
+                updateNestedField('vDedRed', 'vDR', value);
                 // Limpar percentual se valor for definido
                 if (value) {
                   updateNestedField('vDedRed', 'pDR', undefined);
                 }
               }}
+              min={0}
               help="Valor fixo de dedução (use OU percentual OU valor)"
             />
           </div>
@@ -347,18 +322,13 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
 
           {data.trib.tribMun.tribISSQN === '1' && (
             <>
-              <InputField
+              <FocusStableNumeric
                 label="Alíquota do ISSQN (%)"
                 name="pAliq"
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                value={data.trib.tribMun.pAliq || ''}
-                onChange={(value) => {
-                  const numValue = value === '' ? undefined : parseFloat(value) || undefined;
-                  updateDeepNestedField('trib', 'tribMun', 'pAliq', numValue);
-                }}
+                value={data.trib.tribMun.pAliq}
+                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'pAliq', value)}
+                min={0}
+                max={100}
                 help="Alíquota aplicável ao serviço"
               />
 
@@ -419,17 +389,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 placeholder="Ex: 12345678901234"
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Valor da Redução da Base de Cálculo"
                 name="vRedBCBM"
-                type="number"
-                step="0.01"
-                min="0"
-                value={data.trib.tribMun.BM.vRedBCBM || ''}
-                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'BM', { 
-                  ...data.trib.tribMun.BM, 
-                  vRedBCBM: parseFloat(value) || undefined 
-                })}
+                value={data.trib.tribMun.BM.vRedBCBM}
+                onChange={(value) => {
+                  updateDeepNestedField('trib', 'tribMun', 'BM', { 
+                    ...data.trib.tribMun.BM, 
+                    vRedBCBM: value 
+                  });
+                }}
+                min={0}
                 help="Valor da redução quando tipo = 1"
               />
             </div>
@@ -540,79 +510,63 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     ]}
                   />
 
-                  <InputField
+                  <FocusStableNumeric
                     label="Base de Cálculo PIS/COFINS"
                     name="vBCPisCofins"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={data.trib.tribFed!.piscofins!.vBCPisCofins || ''}
+                    value={data.trib.tribFed!.piscofins!.vBCPisCofins}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
                       ...data.trib.tribFed!.piscofins!, 
-                      vBCPisCofins: parseFloat(value) || undefined 
+                      vBCPisCofins: value 
                     })}
+                    min={0}
                     help="Base de cálculo para PIS/COFINS"
                   />
 
-                  <InputField
+                  <FocusStableNumeric
                     label="Alíquota PIS (%)"
                     name="pAliqPis"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={data.trib.tribFed!.piscofins!.pAliqPis || ''}
+                    value={data.trib.tribFed!.piscofins!.pAliqPis}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
                       ...data.trib.tribFed!.piscofins!, 
-                      pAliqPis: parseFloat(value) || undefined 
+                      pAliqPis: value 
                     })}
+                    min={0}
                     help="Alíquota do PIS"
                   />
 
-                  <InputField
+                  <FocusStableNumeric
                     label="Alíquota COFINS (%)"
                     name="pAliqCofins"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={data.trib.tribFed!.piscofins!.pAliqCofins || ''}
+                    value={data.trib.tribFed!.piscofins!.pAliqCofins}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
                       ...data.trib.tribFed!.piscofins!, 
-                      pAliqCofins: parseFloat(value) || undefined 
+                      pAliqCofins: value 
                     })}
+                    min={0}
                     help="Alíquota do COFINS"
                   />
 
-                  <InputField
+                  <FocusStableNumeric
                     label="Valor PIS"
                     name="vPis"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={data.trib.tribFed!.piscofins!.vPis || ''}
-                    onChange={(value) => {
-                      const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                      updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                        ...data.trib.tribFed!.piscofins!, 
-                        vPis: numValue 
-                      });
-                    }}
+                    value={data.trib.tribFed!.piscofins!.vPis}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      vPis: value || 0 
+                    })}
+                    min={0}
                     help="Valor calculado do PIS"
                   />
 
-                  <InputField
+                  <FocusStableNumeric
                     label="Valor COFINS"
                     name="vCofins"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={data.trib.tribFed!.piscofins!.vCofins || ''}
-                    onChange={(value) => {
-                      const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                      updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                        ...data.trib.tribFed!.piscofins!, 
-                        vCofins: numValue 
-                      });
-                    }}
+                    value={data.trib.tribFed!.piscofins!.vCofins}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      vCofins: value || 0 
+                    })}
+                    min={0}
                     help="Valor calculado do COFINS"
                   />
 
@@ -641,45 +595,39 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             description="Valores retidos de IR, CSLL e Contribuição Previdenciária"
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <InputField
+              <FocusStableNumeric
                 label="Valor Retido Contribuição Previdenciária"
                 name="vRetCP"
-                type="number"
-                step="0.01"
-                min="0"
-                value={data.trib.tribFed!.vRetCP || ''}
-                onChange={(value) => {
-                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                  updateNestedField('tribFed', 'vRetCP', numValue);
-                }}
+                value={data.trib.tribFed!.vRetCP}
+                onChange={(value) => updateNestedField('trib', 'tribFed', { 
+                  ...data.trib.tribFed!, 
+                  vRetCP: value || 0 
+                })}
+                min={0}
                 help="INSS retido na fonte"
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Valor Retido IRRF"
                 name="vRetIRRF"
-                type="number"
-                step="0.01"
-                min="0"
-                value={data.trib.tribFed!.vRetIRRF || ''}
-                onChange={(value) => {
-                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                  updateNestedField('tribFed', 'vRetIRRF', numValue);
-                }}
+                value={data.trib.tribFed!.vRetIRRF}
+                onChange={(value) => updateNestedField('trib', 'tribFed', { 
+                  ...data.trib.tribFed!, 
+                  vRetIRRF: value || 0 
+                })}
+                min={0}
                 help="Imposto de Renda retido na fonte"
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Valor Retido CSLL"
                 name="vRetCSLL"
-                type="number"
-                step="0.01"
-                min="0"
-                value={data.trib.tribFed!.vRetCSLL || ''}
-                onChange={(value) => {
-                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                  updateNestedField('tribFed', 'vRetCSLL', numValue);
-                }}
+                value={data.trib.tribFed!.vRetCSLL}
+                onChange={(value) => updateNestedField('trib', 'tribFed', { 
+                  ...data.trib.tribFed!, 
+                  vRetCSLL: value || 0 
+                })}
+                min={0}
                 help="Contribuição Social sobre Lucro Líquido retida"
               />
             </div>
@@ -707,54 +655,39 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         >
           {data.trib.totTrib!.vTotTrib && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <InputField
+              <FocusStableNumeric
                 label="Total Tributos Federais"
                 name="vTotTribFed"
-                type="number"
-                step="0.01"
-                min="0"
-                value={data.trib.totTrib!.vTotTrib!.vTotTribFed || ''}
-                onChange={(value) => {
-                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                  updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                    ...data.trib.totTrib!.vTotTrib!, 
-                    vTotTribFed: numValue 
-                  });
-                }}
+                value={data.trib.totTrib!.vTotTrib!.vTotTribFed}
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                  ...data.trib.totTrib!.vTotTrib!, 
+                  vTotTribFed: value || 0 
+                })}
+                min={0}
                 help="Soma de todos os tributos federais"
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Total Tributos Estaduais"
                 name="vTotTribEst"
-                type="number"
-                step="0.01"
-                min="0"
-                value={data.trib.totTrib!.vTotTrib!.vTotTribEst || ''}
-                onChange={(value) => {
-                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                  updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                    ...data.trib.totTrib!.vTotTrib!, 
-                    vTotTribEst: numValue 
-                  });
-                }}
+                value={data.trib.totTrib!.vTotTrib!.vTotTribEst}
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                  ...data.trib.totTrib!.vTotTrib!, 
+                  vTotTribEst: value || 0 
+                })}
+                min={0}
                 help="Soma de todos os tributos estaduais"
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Total Tributos Municipais"
                 name="vTotTribMun"
-                type="number"
-                step="0.01"
-                min="0"
-                value={data.trib.totTrib!.vTotTrib!.vTotTribMun || ''}
-                onChange={(value) => {
-                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                  updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                    ...data.trib.totTrib!.vTotTrib!, 
-                    vTotTribMun: numValue 
-                  });
-                }}
+                value={data.trib.totTrib!.vTotTrib!.vTotTribMun}
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                  ...data.trib.totTrib!.vTotTrib!, 
+                  vTotTribMun: value || 0 
+                })}
+                min={0}
                 help="Soma de todos os tributos municipais (ISSQN)"
               />
             </div>
