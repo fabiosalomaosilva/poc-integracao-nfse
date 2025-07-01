@@ -8,9 +8,11 @@ function safeToFixed(value: number | undefined, decimals: number = 2): string | 
 
 export class CompleteNFSeGenerator {
   private xmlBuilder: XMLBuilder;
+  private commonTimestamp: string;
 
   constructor() {
     this.xmlBuilder = new XMLBuilder();
+    this.commonTimestamp = '';
   }
 
   // Gera DPS completo
@@ -59,6 +61,9 @@ export class CompleteNFSeGenerator {
   // Gera NFSe completa (com DPS interno)
   generateCompleteNFSeXML(data: CompleteNFSeData): string {
     this.xmlBuilder.clear();
+    
+    // Definir timestamp comum para dhEmi e dhProc
+    this.commonTimestamp = XMLUtils.formatDate(data.infNFSe.dhProc || new Date().toISOString());
 
     this.xmlBuilder
       .openElement('NFSe', {
@@ -88,9 +93,12 @@ export class CompleteNFSeGenerator {
   }
 
   private addDadosBasicosDPS(infDPS: CompleteDPSData['infDPS']): void {
+    // Usar o timestamp comum se estiver definido, senão usar o dhEmi dos dados
+    const dhEmiToUse = this.commonTimestamp || infDPS.dhEmi;
+    
     this.xmlBuilder
       .addElement('tpAmb', infDPS.tpAmb)
-      .addDate('dhEmi', infDPS.dhEmi)
+      .addDate('dhEmi', dhEmiToUse)
       .addElement('verAplic', infDPS.verAplic)
       .addOptional('serie', infDPS.serie)
       .addElement('nDPS', infDPS.nDPS)
@@ -134,8 +142,7 @@ export class CompleteNFSeGenerator {
 
         builder
           .addOptional('IM', prest.IM)
-          .addElement('xNome', XMLUtils.sanitizeText(prest.xNome))
-          .addOptional('xFant', XMLUtils.sanitizeText(prest.xFant));
+          .addElement('xNome', XMLUtils.sanitizeText(prest.xNome));
 
         // Endereço
         this.addEndereco(builder, prest.end);
@@ -541,7 +548,7 @@ export class CompleteNFSeGenerator {
       .addElement('tpEmis', infNFSe.tpEmis)
       .addOptional('procEmi', infNFSe.procEmi)
       .addOptional('cStat', infNFSe.cStat)
-      .addOptional('dhProc', XMLUtils.formatDate(infNFSe.dhProc))
+      .addOptional('dhProc', this.commonTimestamp)
       .addOptional('nDFSe', infNFSe.nDFSe);
   }
 
