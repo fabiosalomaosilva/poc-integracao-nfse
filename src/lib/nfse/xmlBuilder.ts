@@ -11,7 +11,7 @@ export class XMLBuilder {
 
   // Adiciona um elemento com indentação
   private getIndent(): string {
-    return '  '.repeat(this.indentLevel);
+    return '  '.repeat(Math.max(0, this.indentLevel));
   }
 
   // Adiciona elemento de abertura
@@ -38,7 +38,7 @@ export class XMLBuilder {
 
   // Adiciona elemento de fechamento
   closeElement(tagName: string): XMLBuilder {
-    this.indentLevel--;
+    this.indentLevel = Math.max(0, this.indentLevel - 1);
     this.elements.push(this.getIndent() + `</${tagName}>`);
     return this;
   }

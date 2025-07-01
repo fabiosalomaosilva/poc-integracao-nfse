@@ -8,7 +8,7 @@ import TomadorForm from './forms/TomadorForm';
 import IntermediarioForm from './forms/IntermediarioForm';
 import ServicosForm from './forms/ServicosForm';
 import ValoresForm from './forms/ValoresForm';
-import { CompleteDPSData } from '../../types/nfse/complete';
+import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
 import { loadXMLTemplate } from '../../utils/xmlTemplateParser';
 
 interface CompleteNFSeFormProps {
@@ -144,8 +144,11 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
       const { CompleteNFSeGenerator } = await import('../../lib/nfse/completeGenerator');
       const generator = new CompleteNFSeGenerator();
       
-      // Gera o XML da DPS completo
-      const xml = generator.generateDPSXML(formData);
+      // Converte dados DPS para NFSe completa
+      const nfseData = convertDPSToCompleteNFSe(formData);
+      
+      // Gera o XML da NFSe completa
+      const xml = generator.generateCompleteNFSeXML(nfseData);
       
       onXMLGenerated(xml);
     } catch (err) {
@@ -154,6 +157,57 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     } finally {
       setLoading(false);
     }
+  };
+
+  // Função para converter dados DPS para NFSe completa
+  const convertDPSToCompleteNFSe = (dpsData: CompleteDPSData): CompleteNFSeData => {
+    return {
+      versao: '1.00',
+      infNFSe: {
+        Id: 'NSF00',
+        xLocEmi: 'Regente Feijó', // Valor do template
+        xLocPrestacao: 'Regente Feijó', // Valor do template
+        nNFSe: '1',
+        cLocIncid: dpsData.infDPS.cLocEmi,
+        xLocIncid: 'Regente Feijó',
+        xTribNac: dpsData.infDPS.serv.cServ.xDescServ,
+        xTribMun: dpsData.infDPS.serv.cServ.xDescServ?.substring(0, 40),
+        verAplic: '1.00',
+        ambGer: dpsData.infDPS.tpAmb,
+        tpEmis: '2',
+        procEmi: '1',
+        cStat: '100',
+        dhProc: new Date().toISOString(),
+        nDFSe: '1',
+        emit: {
+          CNPJ: dpsData.infDPS.prest.CNPJ || '0000000000000',
+          IM: dpsData.infDPS.prest.IM || '4292',
+          xNome: dpsData.infDPS.prest.xNome || 'Empresa de Teste 01',
+          xFant: dpsData.infDPS.prest.xFant || 'Empresa de Teste 01',
+          enderNac: {
+            xLgr: dpsData.infDPS.prest.end.xLgr || 'AV. ATILIO ALBERTINI',
+            nro: dpsData.infDPS.prest.end.nro || '0',
+            xCpl: dpsData.infDPS.prest.end.xCpl || 'S/N - PARTE',
+            xBairro: dpsData.infDPS.prest.end.xBairro || 'DISTRITO INDUSTRIAL',
+            cMun: dpsData.infDPS.prest.end.endNac?.cMun || '3542404',
+            UF: 'SP',
+            CEP: dpsData.infDPS.prest.end.endNac?.CEP || '19570000'
+          },
+          fone: dpsData.infDPS.prest.fone || '1832296800',
+          email: dpsData.infDPS.prest.email || 'teste@teste.com.br'
+        },
+        valores: {
+          vCalcDR: 0.00,
+          vCalcBM: 0.00,
+          vBC: dpsData.infDPS.valores.vServPrest.vServ || 0,
+          pAliqAplic: dpsData.infDPS.valores.trib.tribMun.pAliq || 0,
+          vISSQN: (dpsData.infDPS.valores.vServPrest.vServ || 0) * (dpsData.infDPS.valores.trib.tribMun.pAliq || 0) / 100,
+          vTotalRet: 0.00,
+          vLiq: dpsData.infDPS.valores.vServPrest.vServ || 0
+        },
+        DPS: dpsData
+      }
+    };
   };
 
   // Verificar se intermediário deve ser mostrado

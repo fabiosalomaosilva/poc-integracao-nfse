@@ -12,21 +12,23 @@ interface ValoresFormProps {
 
 export default function ValoresForm({ data, onChange }: ValoresFormProps) {
   const updateField = (field: string, value: any) => {
-    onChange({ ...data, [field]: value });
+    const newData = { ...data, [field]: value };
+    onChange(newData);
   };
 
   const updateNestedField = (section: string, field: string, value: any) => {
-    onChange({
+    const newData = {
       ...data,
       [section]: {
         ...data[section as keyof ValoresCompletos],
         [field]: value
       }
-    });
+    };
+    onChange(newData);
   };
 
   const updateDeepNestedField = (section: string, subsection: string, field: string, value: any) => {
-    onChange({
+    const newData = {
       ...data,
       [section]: {
         ...data[section as keyof ValoresCompletos],
@@ -35,7 +37,8 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           [field]: value
         }
       }
-    });
+    };
+    onChange(newData);
   };
 
   // Estados para controlar quais seções estão ativas
@@ -135,10 +138,10 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           type="number"
           step="0.01"
           min="0"
-          value={data.vServPrest.vServ}
+          value={data.vServPrest.vServ || ''}
           onChange={(value) => {
-            updateNestedField('vServPrest', 'vServ', parseFloat(value) || 0);
-            setTimeout(calcularValores, 100);
+            const numValue = value === '' ? 0 : parseFloat(value) || 0;
+            updateNestedField('vServPrest', 'vServ', numValue);
           }}
           required
           help="Valor total do serviço prestado"
@@ -151,7 +154,10 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           step="0.01"
           min="0"
           value={data.vServPrest.vReceb || ''}
-          onChange={(value) => updateNestedField('vServPrest', 'vReceb', parseFloat(value) || undefined)}
+          onChange={(value) => {
+            const numValue = value === '' ? undefined : parseFloat(value) || undefined;
+            updateNestedField('vServPrest', 'vReceb', numValue);
+          }}
           help="Valor que o intermediário recebe (se houver)"
         />
       </div>
@@ -194,10 +200,10 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               type="number"
               step="0.01"
               min="0"
-              value={data.vDescCondIncond.vDescIncond || 0}
+              value={data.vDescCondIncond.vDescIncond || ''}
               onChange={(value) => {
-                updateNestedField('vDescCondIncond', 'vDescIncond', parseFloat(value) || 0);
-                setTimeout(calcularValores, 100);
+                const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                updateNestedField('vDescCondIncond', 'vDescIncond', numValue);
               }}
               help="Desconto garantido independente de condições"
             />
@@ -208,10 +214,10 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               type="number"
               step="0.01"
               min="0"
-              value={data.vDescCondIncond.vDescCond || 0}
+              value={data.vDescCondIncond.vDescCond || ''}
               onChange={(value) => {
-                updateNestedField('vDescCondIncond', 'vDescCond', parseFloat(value) || 0);
-                setTimeout(calcularValores, 100);
+                const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                updateNestedField('vDescCondIncond', 'vDescCond', numValue);
               }}
               help="Desconto condicionado a critérios específicos"
             />
@@ -247,12 +253,12 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               max="100"
               value={data.vDedRed.pDR || ''}
               onChange={(value) => {
-                updateNestedField('vDedRed', 'pDR', parseFloat(value) || undefined);
+                const numValue = value === '' ? undefined : parseFloat(value) || undefined;
+                updateNestedField('vDedRed', 'pDR', numValue);
                 // Limpar valor se percentual for definido
                 if (value) {
                   updateNestedField('vDedRed', 'vDR', undefined);
                 }
-                setTimeout(calcularValores, 100);
               }}
               help="Percentual de dedução sobre o valor do serviço"
             />
@@ -265,12 +271,12 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               min="0"
               value={data.vDedRed.vDR || ''}
               onChange={(value) => {
-                updateNestedField('vDedRed', 'vDR', parseFloat(value) || undefined);
+                const numValue = value === '' ? undefined : parseFloat(value) || undefined;
+                updateNestedField('vDedRed', 'vDR', numValue);
                 // Limpar percentual se valor for definido
                 if (value) {
                   updateNestedField('vDedRed', 'pDR', undefined);
                 }
-                setTimeout(calcularValores, 100);
               }}
               help="Valor fixo de dedução (use OU percentual OU valor)"
             />
@@ -350,8 +356,8 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 max="100"
                 value={data.trib.tribMun.pAliq || ''}
                 onChange={(value) => {
-                  updateDeepNestedField('trib', 'tribMun', 'pAliq', parseFloat(value) || undefined);
-                  setTimeout(calcularValores, 100);
+                  const numValue = value === '' ? undefined : parseFloat(value) || undefined;
+                  updateDeepNestedField('trib', 'tribMun', 'pAliq', numValue);
                 }}
                 help="Alíquota aplicável ao serviço"
               />
@@ -582,11 +588,14 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     type="number"
                     step="0.01"
                     min="0"
-                    value={data.trib.tribFed!.piscofins!.vPis || 0}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...data.trib.tribFed!.piscofins!, 
-                      vPis: parseFloat(value) || 0 
-                    })}
+                    value={data.trib.tribFed!.piscofins!.vPis || ''}
+                    onChange={(value) => {
+                      const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                      updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                        ...data.trib.tribFed!.piscofins!, 
+                        vPis: numValue 
+                      });
+                    }}
                     help="Valor calculado do PIS"
                   />
 
@@ -596,11 +605,14 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     type="number"
                     step="0.01"
                     min="0"
-                    value={data.trib.tribFed!.piscofins!.vCofins || 0}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...data.trib.tribFed!.piscofins!, 
-                      vCofins: parseFloat(value) || 0 
-                    })}
+                    value={data.trib.tribFed!.piscofins!.vCofins || ''}
+                    onChange={(value) => {
+                      const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                      updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                        ...data.trib.tribFed!.piscofins!, 
+                        vCofins: numValue 
+                      });
+                    }}
                     help="Valor calculado do COFINS"
                   />
 
@@ -635,8 +647,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 type="number"
                 step="0.01"
                 min="0"
-                value={data.trib.tribFed!.vRetCP || 0}
-                onChange={(value) => updateNestedField('tribFed', 'vRetCP', parseFloat(value) || 0)}
+                value={data.trib.tribFed!.vRetCP || ''}
+                onChange={(value) => {
+                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                  updateNestedField('tribFed', 'vRetCP', numValue);
+                }}
                 help="INSS retido na fonte"
               />
 
@@ -646,8 +661,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 type="number"
                 step="0.01"
                 min="0"
-                value={data.trib.tribFed!.vRetIRRF || 0}
-                onChange={(value) => updateNestedField('tribFed', 'vRetIRRF', parseFloat(value) || 0)}
+                value={data.trib.tribFed!.vRetIRRF || ''}
+                onChange={(value) => {
+                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                  updateNestedField('tribFed', 'vRetIRRF', numValue);
+                }}
                 help="Imposto de Renda retido na fonte"
               />
 
@@ -657,8 +675,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 type="number"
                 step="0.01"
                 min="0"
-                value={data.trib.tribFed!.vRetCSLL || 0}
-                onChange={(value) => updateNestedField('tribFed', 'vRetCSLL', parseFloat(value) || 0)}
+                value={data.trib.tribFed!.vRetCSLL || ''}
+                onChange={(value) => {
+                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                  updateNestedField('tribFed', 'vRetCSLL', numValue);
+                }}
                 help="Contribuição Social sobre Lucro Líquido retida"
               />
             </div>
@@ -692,11 +713,14 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 type="number"
                 step="0.01"
                 min="0"
-                value={data.trib.totTrib!.vTotTrib!.vTotTribFed}
-                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                  ...data.trib.totTrib!.vTotTrib!, 
-                  vTotTribFed: parseFloat(value) || 0 
-                })}
+                value={data.trib.totTrib!.vTotTrib!.vTotTribFed || ''}
+                onChange={(value) => {
+                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                  updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                    ...data.trib.totTrib!.vTotTrib!, 
+                    vTotTribFed: numValue 
+                  });
+                }}
                 help="Soma de todos os tributos federais"
               />
 
@@ -706,11 +730,14 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 type="number"
                 step="0.01"
                 min="0"
-                value={data.trib.totTrib!.vTotTrib!.vTotTribEst}
-                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                  ...data.trib.totTrib!.vTotTrib!, 
-                  vTotTribEst: parseFloat(value) || 0 
-                })}
+                value={data.trib.totTrib!.vTotTrib!.vTotTribEst || ''}
+                onChange={(value) => {
+                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                  updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                    ...data.trib.totTrib!.vTotTrib!, 
+                    vTotTribEst: numValue 
+                  });
+                }}
                 help="Soma de todos os tributos estaduais"
               />
 
@@ -720,11 +747,14 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 type="number"
                 step="0.01"
                 min="0"
-                value={data.trib.totTrib!.vTotTrib!.vTotTribMun}
-                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                  ...data.trib.totTrib!.vTotTrib!, 
-                  vTotTribMun: parseFloat(value) || 0 
-                })}
+                value={data.trib.totTrib!.vTotTrib!.vTotTribMun || ''}
+                onChange={(value) => {
+                  const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                  updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                    ...data.trib.totTrib!.vTotTrib!, 
+                    vTotTribMun: numValue 
+                  });
+                }}
                 help="Soma de todos os tributos municipais (ISSQN)"
               />
             </div>
