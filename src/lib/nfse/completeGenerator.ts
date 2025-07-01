@@ -1,5 +1,7 @@
 import { XMLBuilder, XMLUtils } from './xmlBuilder';
 import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
+import { gerarChaveAcessoNFSe, gerarChaveAcessoDPS } from '../../utils/chaveAcessoGenerator';
+import { validarEmitente, validarPrestador } from '../../utils/documentValidator';
 
 // Helper para formatar números de forma segura
 function safeToFixed(value: number | undefined, decimals: number = 2): string | undefined {
@@ -19,12 +21,27 @@ export class CompleteNFSeGenerator {
   generateDPSXML(data: CompleteDPSData): string {
     this.xmlBuilder.clear();
 
+    // Validar prestador antes de gerar XML
+    const validacaoPrestador = validarPrestador(data.infDPS.prest);
+    if (!validacaoPrestador.valido) {
+      throw new Error(`Erro de validação do prestador: ${validacaoPrestador.erros.join(', ')}`);
+    }
+
+    // Gerar ID da DPS automaticamente
+    const idDPS = gerarChaveAcessoDPS({
+      cnpj: data.infDPS.prest.CNPJ,
+      cpf: data.infDPS.prest.CPF,
+      cLocEmi: data.infDPS.cLocEmi,
+      serie: data.infDPS.serie || '1',
+      nDPS: data.infDPS.nDPS
+    });
+
     this.xmlBuilder
       .openElement('DPS', {
         'xmlns': 'http://www.sped.fazenda.gov.br/nfse',
         'versao': data.versao
       })
-      .openElement('infDPS', { 'Id': data.infDPS.Id || 'DPS00' });
+      .openElement('infDPS', { 'Id': idDPS });
 
     // Dados básicos da DPS
     this.addDadosBasicosDPS(data.infDPS);
@@ -62,15 +79,36 @@ export class CompleteNFSeGenerator {
   generateCompleteNFSeXML(data: CompleteNFSeData): string {
     this.xmlBuilder.clear();
     
+    // Validar emitente antes de gerar XML
+    const validacaoEmitente = validarEmitente(data.infNFSe.emit);
+    if (!validacaoEmitente.valido) {
+      throw new Error(`Erro de validação do emitente: ${validacaoEmitente.erros.join(', ')}`);
+    }
+
+    // Validar prestador da DPS interna
+    const validacaoPrestador = validarPrestador(data.infNFSe.DPS.infDPS.prest);
+    if (!validacaoPrestador.valido) {
+      throw new Error(`Erro de validação do prestador (DPS): ${validacaoPrestador.erros.join(', ')}`);
+    }
+    
     // Definir timestamp comum para dhEmi e dhProc
     this.commonTimestamp = XMLUtils.formatDate(data.infNFSe.dhProc || new Date().toISOString());
+
+    // Gerar ID da NFSe automaticamente
+    const idNFSe = gerarChaveAcessoNFSe({
+      cnpj: data.infNFSe.emit.CNPJ,
+      ambGer: data.infNFSe.ambGer,
+      cLocIncid: data.infNFSe.cLocIncid || data.infNFSe.DPS.infDPS.cLocEmi,
+      nNFSe: data.infNFSe.nNFSe || '1',
+      dhProc: this.commonTimestamp
+    });
 
     this.xmlBuilder
       .openElement('NFSe', {
         'xmlns': 'http://www.sped.fazenda.gov.br/nfse',
         'versao': data.versao
       })
-      .openElement('infNFSe', { 'Id': data.infNFSe.Id || 'NFSe00' });
+      .openElement('infNFSe', { 'Id': idNFSe });
 
     // Dados da NFSe
     this.addDadosNFSe(data.infNFSe);
@@ -546,7 +584,6 @@ export class CompleteNFSeGenerator {
       .addElement('verAplic', infNFSe.verAplic)
       .addElement('ambGer', infNFSe.ambGer)
       .addElement('tpEmis', infNFSe.tpEmis)
-      .addOptional('procEmi', infNFSe.procEmi)
       .addOptional('cStat', infNFSe.cStat)
       .addOptional('dhProc', this.commonTimestamp)
       .addOptional('nDFSe', infNFSe.nDFSe);
@@ -594,13 +631,22 @@ export class CompleteNFSeGenerator {
   }
 
   private addDPSInterno(dps: CompleteDPSData): void {
+    // Validação já foi feita no método principal, só gerar ID
+    const idDPSInterno = gerarChaveAcessoDPS({
+      cnpj: dps.infDPS.prest.CNPJ,
+      cpf: dps.infDPS.prest.CPF,
+      cLocEmi: dps.infDPS.cLocEmi,
+      serie: dps.infDPS.serie || '1',
+      nDPS: dps.infDPS.nDPS
+    });
+
     // Adiciona a DPS como elemento direto no XMLBuilder
     this.xmlBuilder
       .openElement('DPS', {
         'xmlns': 'http://www.sped.fazenda.gov.br/nfse',
         'versao': dps.versao
       })
-      .openElement('infDPS', { 'Id': dps.infDPS.Id || 'DPS00' });
+      .openElement('infDPS', { 'Id': idDPSInterno });
 
     // Dados básicos da DPS
     this.addDadosBasicosDPS(dps.infDPS);

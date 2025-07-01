@@ -294,7 +294,6 @@ export interface CompleteNFSeData {
     verAplic: string;
     ambGer: '1' | '2';
     tpEmis: '1' | '2';
-    procEmi: '1' | '2' | '3';
     cStat: string;
     dhProc: string;
     nDFSe?: string;
