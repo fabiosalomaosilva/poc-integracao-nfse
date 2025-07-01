@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DPS xmlns="http://www.prefeitura.sp.gov.br/nfse/schema" versao="1.00">
+  <infDPS Id="DPS123456">
+    <tpAmb>2</tpAmb>
+    <dhEmi>2025-07-01T10:30:00-03:00</dhEmi>
+    <verAplic>1.00</verAplic>
+    <serie>00001</serie>
+    <nDPS>123456</nDPS>
+    <dCompet>2025-07</dCompet>
+    <tpEmit>1</tpEmit>
+    <cLocEmi>3550308</cLocEmi>
+    
+    <prest>
+      <CNPJ>12345678000195</CNPJ>
+      <IM>12345678</IM>
+      <xNome>Empresa Prestadora LTDA</xNome>
+      <xFant>Prestadora</xFant>
+      <xLgr>Rua das Empresas, 123</xLgr>
+      <nro>123</nro>
+      <xBairro>Centro</xBairro>
+      <cMun>3550308</cMun>
+      <CEP>01000000</CEP>
+      <fone>1133334444</fone>
+      <email>contato@prestadora.com</email>
+      <opSimpNac>1</opSimpNac>
+      <regEspTrib>0</regEspTrib>
+    </prest>
+    
+    <toma>
+      <CNPJ>98765432000111</CNPJ>
+      <xNome>Empresa Tomadora S/A</xNome>
+      <xLgr>Avenida dos Clientes, 456</xLgr>
+      <nro>456</nro>
+      <xBairro>Vila Nova</xBairro>
+      <cMun>3550308</cMun>
+      <CEP>02000000</CEP>
+      <fone>1155556666</fone>
+      <email>financeiro@tomadora.com</email>
+    </toma>
+    
+    <servicos>
+      <cLocPrestacao>3550308</cLocPrestacao>
+      <cTribNac>01.01</cTribNac>
+      <xDescServ>Consultoria em tecnologia da informação</xDescServ>
+      <comExt>
+        <mdPrestacao>1</mdPrestacao>
+        <vincPrest>2</vincPrest>
+        <tpMoeda>BRL</tpMoeda>
+        <vServMoeda>1000.00</vServMoeda>
+        <mecApoioFomento>1</mecApoioFomento>
+        <mdic>2</mdic>
+      </comExt>
+    </servicos>
+    
+    <valores>
+      <vServ>1000.00</vServ>
+      <vDescIncond>50.00</vDescIncond>
+      <vLiq>950.00</vLiq>
+      <tribISSQN>1</tribISSQN>
+      <pAliq>2.00</pAliq>
+      <vBC>950.00</vBC>
+      <vISS>19.00</vISS>
+      <tpRetISSQN>1</tpRetISSQN>
+    </valores>
+  </infDPS>
+</DPS>

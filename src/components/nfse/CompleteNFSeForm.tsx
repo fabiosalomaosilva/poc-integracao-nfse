@@ -11,6 +11,7 @@ import ValoresForm from './forms/ValoresForm';
 import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
 import { loadXMLTemplate } from '../../utils/xmlTemplateParser';
 import { getCurrentBrazilDateTime } from '../../utils/dateTimeUtils';
+import XMLUploader from '../ui/XMLUploader';
 
 interface CompleteNFSeFormProps {
   onXMLGenerated: (xml: string) => void;
@@ -135,6 +136,13 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     }));
   }, []);
 
+  // Função para carregar XML e popular formulário
+  const handleXMLLoad = useCallback((xmlData: CompleteDPSData) => {
+    setFormData(xmlData);
+    setError('');
+    console.log('XML carregado e formulário atualizado:', xmlData);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -215,6 +223,22 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
   const showIntermediario = formData.infDPS.tpEmit === '3';
 
   const tabs = [
+    {
+      id: 'upload-xml',
+      label: '📁 Carregar XML',
+      content: (
+        <div className="space-y-6">
+          <div className="border border-gray-200 rounded-md p-4">
+            <h3 className="text-sm font-medium text-gray-900 mb-2">Carregar XML Existente</h3>
+            <p className="text-sm text-gray-600">
+              Faça upload de um arquivo XML de NFSe existente para editar seus dados. 
+              Todos os formulários serão preenchidos automaticamente com as informações do XML.
+            </p>
+          </div>
+          <XMLUploader onXMLParsed={handleXMLLoad} />
+        </div>
+      )
+    },
     {
       id: 'dados-gerais',
       label: 'Dados Gerais',
