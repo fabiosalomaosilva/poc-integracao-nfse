@@ -115,24 +115,27 @@ export function parseNFSeXML(xmlContent: string): CompleteDPSData {
   }
 
   // Extrair dados dos serviços
-  const servicosElement = infDPS.querySelector('servicos');
+  const servElement = infDPS.querySelector('serv');
+  const locPrestElement = servElement?.querySelector('locPrest');
+  const cServElement = servElement?.querySelector('cServ');
+  
   const servicos: any = {
     locPrest: {
-      cLocPrestacao: getText('cLocPrestacao', servicosElement || undefined),
-      cPaisPrestacao: getText('cPaisPrestacao', servicosElement || undefined),
-      opConsumServ: getText('opConsumServ', servicosElement || undefined)
+      cLocPrestacao: getText('cLocPrestacao', locPrestElement || undefined),
+      cPaisPrestacao: getText('cPaisPrestacao', locPrestElement || undefined),
+      opConsumServ: getText('opConsumServ', locPrestElement || undefined)
     },
     cServ: {
-      cTribNac: getText('cTribNac', servicosElement || undefined),
-      cTribMun: getText('cTribMun', servicosElement || undefined),
-      cNBS: getText('cNBS', servicosElement || undefined),
-      cIntContrib: getText('cIntContrib', servicosElement || undefined),
-      xDescServ: getText('xDescServ', servicosElement || undefined)
+      cTribNac: getText('cTribNac', cServElement || undefined),
+      cTribMun: getText('cTribMun', cServElement || undefined),
+      cNBS: getText('cNBS', cServElement || undefined),
+      cIntContrib: getText('cIntContrib', cServElement || undefined),
+      xDescServ: getText('xDescServ', cServElement || undefined)
     }
   };
 
   // Extrair especialidades do serviço (comércio exterior, locação, obra, etc.)
-  const comExtElement = servicosElement?.querySelector('comExt');
+  const comExtElement = servElement?.querySelector('comExt');
   if (comExtElement) {
     servicos.comExt = {
       mdPrestacao: getText('mdPrestacao', comExtElement || undefined),
@@ -148,43 +151,53 @@ export function parseNFSeXML(xmlContent: string): CompleteDPSData {
 
   // Extrair valores e tributação
   const valoresElement = infDPS.querySelector('valores');
+  const vServPrestElement = valoresElement?.querySelector('vServPrest');
+  const vDescCondIncondElement = valoresElement?.querySelector('vDescCondIncond');
+  const vDedRedElement = valoresElement?.querySelector('vDedRed');
+  const tribElement = valoresElement?.querySelector('trib');
+  const tribMunElement = tribElement?.querySelector('tribMun');
+  
   const valores: any = {
     vServPrest: {
-      vServ: getNumber('vServ', valoresElement || undefined),
-      vReceb: getNumber('vReceb', valoresElement || undefined)
+      vServ: getNumber('vServ', vServPrestElement || undefined),
+      vReceb: getNumber('vReceb', vServPrestElement || undefined)
     },
     vLiq: getNumber('vLiq', valoresElement || undefined),
     trib: {
       tribMun: {
-        tribISSQN: getText('tribISSQN', valoresElement || undefined),
-        pAliq: getNumber('pAliq', valoresElement || undefined),
-        vBC: getNumber('vBC', valoresElement || undefined),
-        vISS: getNumber('vISS', valoresElement || undefined),
-        tpRetISSQN: getText('tpRetISSQN', valoresElement || undefined) || '1',
-        cPaisResult: getText('cPaisResult', valoresElement || undefined),
-        tpImunidade: getText('tpImunidade', valoresElement || undefined)
+        tribISSQN: getText('tribISSQN', tribMunElement || undefined),
+        pAliq: getNumber('pAliq', tribMunElement || undefined),
+        vBC: getNumber('vBC', tribMunElement || undefined),
+        vISS: getNumber('vISS', tribMunElement || undefined),
+        tpRetISSQN: getText('tpRetISSQN', tribMunElement || undefined) || '1',
+        cPaisResult: getText('cPaisResult', tribMunElement || undefined),
+        tpImunidade: getText('tpImunidade', tribMunElement || undefined)
       }
     }
   };
 
   // Extrair descontos se existirem
-  const vDescIncond = getNumber('vDescIncond', valoresElement || undefined);
-  const vDescCond = getNumber('vDescCond', valoresElement || undefined);
-  if (vDescIncond > 0 || vDescCond > 0) {
-    valores.vDescCondIncond = {
-      vDescIncond,
-      vDescCond
-    };
+  if (vDescCondIncondElement) {
+    const vDescIncond = getNumber('vDescIncond', vDescCondIncondElement);
+    const vDescCond = getNumber('vDescCond', vDescCondIncondElement);
+    if (vDescIncond > 0 || vDescCond > 0) {
+      valores.vDescCondIncond = {
+        vDescIncond,
+        vDescCond
+      };
+    }
   }
 
   // Extrair deduções se existirem
-  const pDR = getNumber('pDR', valoresElement || undefined);
-  const vDR = getNumber('vDR', valoresElement || undefined);
-  if (pDR > 0 || vDR > 0) {
-    valores.vDedRed = {
-      pDR: pDR > 0 ? pDR : undefined,
-      vDR: vDR > 0 ? vDR : undefined
-    };
+  if (vDedRedElement) {
+    const pDR = getNumber('pDR', vDedRedElement);
+    const vDR = getNumber('vDR', vDedRedElement);
+    if (pDR > 0 || vDR > 0) {
+      valores.vDedRed = {
+        pDR: pDR > 0 ? pDR : undefined,
+        vDR: vDR > 0 ? vDR : undefined
+      };
+    }
   }
 
   // Montar estrutura completa
@@ -236,12 +249,12 @@ export function validateNFSeXML(xmlContent: string): { valid: boolean; error?: s
 
     const prest = xmlDoc.querySelector('prest');
     const toma = xmlDoc.querySelector('toma');
-    const servicos = xmlDoc.querySelector('servicos');
+    const serv = xmlDoc.querySelector('serv');
     const valores = xmlDoc.querySelector('valores');
 
     if (!prest) return { valid: false, error: 'Dados do prestador não encontrados' };
     if (!toma) return { valid: false, error: 'Dados do tomador não encontrados' };
-    if (!servicos) return { valid: false, error: 'Dados dos serviços não encontrados' };
+    if (!serv) return { valid: false, error: 'Dados dos serviços não encontrados' };
     if (!valores) return { valid: false, error: 'Dados dos valores não encontrados' };
 
     return { valid: true };

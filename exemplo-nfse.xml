@@ -38,10 +38,14 @@
       <email>financeiro@tomadora.com</email>
     </toma>
     
-    <servicos>
-      <cLocPrestacao>3550308</cLocPrestacao>
-      <cTribNac>01.01</cTribNac>
-      <xDescServ>Consultoria em tecnologia da informação</xDescServ>
+    <serv>
+      <locPrest>
+        <cLocPrestacao>3550308</cLocPrestacao>
+      </locPrest>
+      <cServ>
+        <cTribNac>01.01</cTribNac>
+        <xDescServ>Consultoria em tecnologia da informação</xDescServ>
+      </cServ>
       <comExt>
         <mdPrestacao>1</mdPrestacao>
         <vincPrest>2</vincPrest>
@@ -50,17 +54,26 @@
         <mecApoioFomento>1</mecApoioFomento>
         <mdic>2</mdic>
       </comExt>
-    </servicos>
+    </serv>
     
     <valores>
-      <vServ>1000.00</vServ>
-      <vDescIncond>50.00</vDescIncond>
+      <vServPrest>
+        <vServ>1000.00</vServ>
+      </vServPrest>
+      <vDescCondIncond>
+        <vDescIncond>50.00</vDescIncond>
+        <vDescCond>0.00</vDescCond>
+      </vDescCondIncond>
       <vLiq>950.00</vLiq>
-      <tribISSQN>1</tribISSQN>
-      <pAliq>2.00</pAliq>
-      <vBC>950.00</vBC>
-      <vISS>19.00</vISS>
-      <tpRetISSQN>1</tpRetISSQN>
+      <trib>
+        <tribMun>
+          <tribISSQN>1</tribISSQN>
+          <pAliq>2.00</pAliq>
+          <vBC>950.00</vBC>
+          <vISS>19.00</vISS>
+          <tpRetISSQN>1</tpRetISSQN>
+        </tribMun>
+      </trib>
     </valores>
   </infDPS>
 </DPS>
