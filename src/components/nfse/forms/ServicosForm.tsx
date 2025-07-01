@@ -76,12 +76,14 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
       switch (tipo) {
         case 'comExt':
           novaEspecialidade = {
-            mdPrestacao: '',
-            vincPrest: '',
-            tpMoeda: '',
+            mdPrestacao: '1',
+            vincPrest: '0',
+            tpMoeda: '790',
             vServMoeda: 0,
-            mecApoioFomento: '',
-            mdic: ''
+            mecAFComexP: '04',
+            mecAFComexT: '05',
+            movTempBens: '1',
+            mdic: '1'
           };
           break;
         case 'lsadppu':
@@ -300,8 +302,8 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
               onChange={(value) => updateNestedField('comExt', 'vincPrest', value)}
               required
               options={[
-                { value: '1', label: 'Vinculadas' },
-                { value: '2', label: 'Não vinculadas' }
+                { value: '0', label: 'Não vinculadas' },
+                { value: '1', label: 'Vinculadas' }
               ]}
               help="Indica se há vínculo entre prestador e tomador"
             />
@@ -313,13 +315,13 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
               onChange={(value) => updateNestedField('comExt', 'tpMoeda', value)}
               required
               options={[
-                { value: 'BRL', label: 'Real (BRL)' },
-                { value: 'USD', label: 'Dólar Americano (USD)' },
-                { value: 'EUR', label: 'Euro (EUR)' },
-                { value: 'GBP', label: 'Libra Esterlina (GBP)' },
-                { value: 'JPY', label: 'Iene (JPY)' }
+                { value: '790', label: 'Real (BRL)' },
+                { value: '840', label: 'Dólar Americano (USD)' },
+                { value: '978', label: 'Euro (EUR)' },
+                { value: '826', label: 'Libra Esterlina (GBP)' },
+                { value: '392', label: 'Iene (JPY)' }
               ]}
-              help="Moeda utilizada na operação"
+              help="Moeda utilizada na operação (código ISO 4217)"
             />
 
             <FocusStableNumeric
@@ -333,19 +335,48 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
             />
 
             <SelectField
-              label="Mecanismo de Apoio/Fomento"
-              name="mecApoioFomento"
-              value={data.comExt.mecApoioFomento}
-              onChange={(value) => updateNestedField('comExt', 'mecApoioFomento', value)}
+              label="Mecanismo de Apoio/Fomento Prestador"
+              name="mecAFComexP"
+              value={data.comExt.mecAFComexP}
+              onChange={(value) => updateNestedField('comExt', 'mecAFComexP', value)}
               required
               options={[
-                { value: '1', label: 'Nenhum' },
-                { value: '2', label: 'ACC - Adiantamento sobre Contrato de Câmbio' },
-                { value: '3', label: 'ACE - Adiantamento sobre Cambiais Entregues' },
-                { value: '4', label: 'BNDES-exim' },
-                { value: '5', label: 'PROEX' }
+                { value: '01', label: 'Nenhum' },
+                { value: '02', label: 'ACC - Adiantamento sobre Contrato de Câmbio' },
+                { value: '03', label: 'ACE - Adiantamento sobre Cambiais Entregues' },
+                { value: '04', label: 'BNDES-exim' },
+                { value: '05', label: 'PROEX' }
               ]}
-              help="Mecanismo de apoio ou fomento utilizado"
+              help="Mecanismo de apoio/fomento do prestador"
+            />
+
+            <SelectField
+              label="Mecanismo de Apoio/Fomento Tomador"
+              name="mecAFComexT"
+              value={data.comExt.mecAFComexT}
+              onChange={(value) => updateNestedField('comExt', 'mecAFComexT', value)}
+              required
+              options={[
+                { value: '01', label: 'Nenhum' },
+                { value: '02', label: 'ACC - Adiantamento sobre Contrato de Câmbio' },
+                { value: '03', label: 'ACE - Adiantamento sobre Cambiais Entregues' },
+                { value: '04', label: 'BNDES-exim' },
+                { value: '05', label: 'PROEX' }
+              ]}
+              help="Mecanismo de apoio/fomento do tomador"
+            />
+
+            <SelectField
+              label="Movimento Temporário de Bens"
+              name="movTempBens"
+              value={data.comExt.movTempBens}
+              onChange={(value) => updateNestedField('comExt', 'movTempBens', value)}
+              required
+              options={[
+                { value: '1', label: 'Sim' },
+                { value: '2', label: 'Não' }
+              ]}
+              help="Indica se há movimento temporário de bens"
             />
 
             <SelectField

@@ -323,14 +323,16 @@ export class CompleteNFSeGenerator {
     if (serv.comExt && XMLUtils.hasAnyValue(serv.comExt)) {
       builder.addGroup('comExt', undefined, (comExtBuilder) => {
         comExtBuilder
-          .addElement('mdPrestacao', serv.comExt.mdPrestacao)
-          .addElement('vincPrest', serv.comExt.vincPrest)
-          .addElement('tpMoeda', serv.comExt.tpMoeda)
-          .addNumber('vServMoeda', serv.comExt.vServMoeda)
-          .addElement('mecApoioFomento', serv.comExt.mecApoioFomento)
+          .addElement('mdPrestacao', serv.comExt.mdPrestacao || '1')
+          .addElement('vincPrest', serv.comExt.vincPrest || '0')
+          .addElement('tpMoeda', serv.comExt.tpMoeda || '790')
+          .addNumber('vServMoeda', serv.comExt.vServMoeda || 0)
+          .addElement('mecAFComexP', serv.comExt.mecAFComexP || '04')
+          .addElement('mecAFComexT', serv.comExt.mecAFComexT || '05')
+          .addElement('movTempBens', serv.comExt.movTempBens || '1')
+          .addElement('mdic', serv.comExt.mdic || '1')
           .addOptional('nroDI', serv.comExt.nroDI)
-          .addOptional('nroRE', serv.comExt.nroRE)
-          .addElement('mdic', serv.comExt.mdic);
+          .addOptional('nroRE', serv.comExt.nroRE);
       });
     }
 
@@ -427,23 +429,25 @@ export class CompleteNFSeGenerator {
 
   private addTributacao(builder: XMLBuilder, trib: any): void {
     builder.addGroup('trib', undefined, (tribBuilder) => {
-      // Tributação Municipal
+      // Tributação Municipal (sempre incluir campos obrigatórios)
       tribBuilder.addGroup('tribMun', undefined, (tribMunBuilder) => {
-        tribMunBuilder.addElement('tribISSQN', trib.tribMun.tribISSQN);
+        // tribISSQN sempre obrigatório
+        tribMunBuilder.addElement('tribISSQN', trib.tribMun?.tribISSQN || '1');
+
+        // pAliq sempre obrigatório (mesmo que 0.00)
+        const pAliq = trib.tribMun?.pAliq;
+        tribMunBuilder.addElement('pAliq', pAliq ? XMLUtils.formatPercentage(pAliq, 2) : '0.00');
+
+        // tpRetISSQN sempre obrigatório
+        tribMunBuilder.addElement('tpRetISSQN', trib.tribMun?.tpRetISSQN || '1');
 
         // Campos condicionais baseados no tipo de tributação
-        if (trib.tribMun.tribISSQN === '2') {
+        if (trib.tribMun?.tribISSQN === '2') {
           tribMunBuilder.addOptional('cPaisResult', trib.tribMun.cPaisResult);
         }
 
-        if (trib.tribMun.tribISSQN === '4') {
+        if (trib.tribMun?.tribISSQN === '4') {
           tribMunBuilder.addOptional('tpImunidade', trib.tribMun.tpImunidade);
-        }
-
-        if (trib.tribMun.tribISSQN === '1') {
-          tribMunBuilder
-            .addOptional('pAliq', XMLUtils.formatPercentage(trib.tribMun.pAliq, 2))
-            .addOptional('tpRetISSQN', trib.tribMun.tpRetISSQN);
         }
 
         // Benefício Municipal (condicional)
@@ -466,46 +470,60 @@ export class CompleteNFSeGenerator {
         }
       });
 
-      // Tributação Federal (condicional)
-      if (trib.tribFed && XMLUtils.hasAnyValue(trib.tribFed)) {
-        tribBuilder.addGroup('tribFed', undefined, (tribFedBuilder) => {
-          // PIS/COFINS (condicional)
-          if (trib.tribFed.piscofins && XMLUtils.hasAnyValue(trib.tribFed.piscofins)) {
-            tribFedBuilder.addGroup('piscofins', undefined, (pisBuilder) => {
-              pisBuilder
-                .addElement('CST', trib.tribFed.piscofins.CST)
-                .addOptional('vBCPisCofins', safeToFixed(trib.tribFed.piscofins.vBCPisCofins))
-                .addOptional('pAliqPis', XMLUtils.formatPercentage(trib.tribFed.piscofins.pAliqPis, 2))
-                .addOptional('pAliqCofins', XMLUtils.formatPercentage(trib.tribFed.piscofins.pAliqCofins, 2))
-                .addOptional('vPis', safeToFixed(trib.tribFed.piscofins.vPis))
-                .addOptional('vCofins', safeToFixed(trib.tribFed.piscofins.vCofins))
-                .addOptional('tpRetPisCofins', trib.tribFed.piscofins.tpRetPisCofins);
-            });
-          }
+      // Tributação Federal (sempre incluir para satisfazer XSD)
+      tribBuilder.addGroup('tribFed', undefined, (tribFedBuilder) => {
+        // PIS/COFINS (condicional, mas incluir CST padrão se não informado)
+        const piscofinData = trib.tribFed?.piscofins;
+        if (piscofinData && XMLUtils.hasAnyValue(piscofinData)) {
+          tribFedBuilder.addGroup('piscofins', undefined, (pisBuilder) => {
+            pisBuilder
+              .addElement('CST', piscofinData.CST)
+              .addOptional('vBCPisCofins', safeToFixed(piscofinData.vBCPisCofins))
+              .addOptional('pAliqPis', XMLUtils.formatPercentage(piscofinData.pAliqPis, 2))
+              .addOptional('pAliqCofins', XMLUtils.formatPercentage(piscofinData.pAliqCofins, 2))
+              .addOptional('vPis', safeToFixed(piscofinData.vPis))
+              .addOptional('vCofins', safeToFixed(piscofinData.vCofins))
+              .addOptional('tpRetPisCofins', piscofinData.tpRetPisCofins);
+          });
+        } else {
+          // Incluir PIS/COFINS com valores padrão
+          tribFedBuilder.addGroup('piscofins', undefined, (pisBuilder) => {
+            pisBuilder
+              .addElement('CST', '00')
+              .addElement('vPis', '0.00')
+              .addElement('vCofins', '0.00');
+          });
+        }
 
-          // Outras retenções
-          tribFedBuilder
-            .addOptional('vRetCP', safeToFixed(trib.tribFed.vRetCP))
-            .addOptional('vRetIRRF', safeToFixed(trib.tribFed.vRetIRRF))
-            .addOptional('vRetCSLL', safeToFixed(trib.tribFed.vRetCSLL));
-        });
-      }
+        // Outras retenções (sempre incluir, mesmo que zeradas)
+        tribFedBuilder
+          .addElement('vRetCP', safeToFixed(trib.tribFed?.vRetCP) || '0.00')
+          .addElement('vRetIRRF', safeToFixed(trib.tribFed?.vRetIRRF) || '0.00')
+          .addElement('vRetCSLL', safeToFixed(trib.tribFed?.vRetCSLL) || '0.00');
+      });
 
-      // Total de Tributos (condicional)
-      if (trib.totTrib && XMLUtils.hasAnyValue(trib.totTrib)) {
-        tribBuilder.addGroup('totTrib', undefined, (totBuilder) => {
-          if (trib.totTrib.vTotTrib && XMLUtils.hasAnyValue(trib.totTrib.vTotTrib)) {
-            totBuilder.addGroup('vTotTrib', undefined, (vTotBuilder) => {
-              vTotBuilder
-                .addNumber('vTotTribFed', trib.totTrib.vTotTrib.vTotTribFed)
-                .addNumber('vTotTribEst', trib.totTrib.vTotTrib.vTotTribEst)
-                .addNumber('vTotTribMun', trib.totTrib.vTotTrib.vTotTribMun);
-            });
-          }
+      // Total de Tributos (sempre incluir para satisfazer XSD)
+      tribBuilder.addGroup('totTrib', undefined, (totBuilder) => {
+        const totTribData = trib.totTrib?.vTotTrib;
+        if (totTribData && XMLUtils.hasAnyValue(totTribData)) {
+          totBuilder.addGroup('vTotTrib', undefined, (vTotBuilder) => {
+            vTotBuilder
+              .addNumber('vTotTribFed', totTribData.vTotTribFed)
+              .addNumber('vTotTribEst', totTribData.vTotTribEst)
+              .addNumber('vTotTribMun', totTribData.vTotTribMun);
+          });
+        } else {
+          // Incluir vTotTrib com valores padrão
+          totBuilder.addGroup('vTotTrib', undefined, (vTotBuilder) => {
+            vTotBuilder
+              .addElement('vTotTribFed', '0.00')
+              .addElement('vTotTribEst', '0.00')
+              .addElement('vTotTribMun', '0.00');
+          });
+        }
 
-          // TODO: Adicionar suporte a pTotTribPerc, indTotTrib, tribSN
-        });
-      }
+        // TODO: Adicionar suporte a pTotTribPerc, indTotTrib, tribSN se necessário
+      });
     });
   }
 

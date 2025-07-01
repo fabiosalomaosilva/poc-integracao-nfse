@@ -134,10 +134,12 @@ export interface ComercioExterior {
   vincPrest: string;
   tpMoeda: string;
   vServMoeda: number;
-  mecApoioFomento: string;
+  mecAFComexP: string;
+  mecAFComexT: string;
+  movTempBens: string;
+  mdic: string;
   nroDI?: string;
   nroRE?: string;
-  mdic: string;
 }
 
 export interface LocacaoSublocacao {
