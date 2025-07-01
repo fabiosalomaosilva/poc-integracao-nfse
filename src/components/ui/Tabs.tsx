@@ -47,7 +47,7 @@ export default function Tabs({ tabs, defaultTab, className = '' }: TabsProps) {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-6">
+      <div className="mt-6" key={activeTab}>
         {activeTabContent}
       </div>
     </div>
@@ -92,7 +92,7 @@ export function SubTabs({ tabs, defaultTab, className = '' }: SubTabsProps) {
       </div>
 
       {/* Sub Tab Content */}
-      <div className="mt-4">
+      <div className="mt-4" key={activeTab}>
         {activeTabContent}
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Tabs from '../ui/Tabs';
 import DadosGeraisForm from './forms/DadosGeraisForm';
 import PrestadorForm from './forms/PrestadorForm';
@@ -10,6 +10,7 @@ import ServicosForm from './forms/ServicosForm';
 import ValoresForm from './forms/ValoresForm';
 import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
 import { loadXMLTemplate } from '../../utils/xmlTemplateParser';
+import { getCurrentBrazilDateTime } from '../../utils/dateTimeUtils';
 
 interface CompleteNFSeFormProps {
   onXMLGenerated: (xml: string) => void;
@@ -19,21 +20,21 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [templateLoading, setTemplateLoading] = useState(true);
-  
+
   // Estado do formulário completo
   const [formData, setFormData] = useState<CompleteDPSData>({
     versao: '1.00',
     infDPS: {
       Id: '',
       tpAmb: '2', // Homologação por padrão
-      dhEmi: new Date().toISOString(),
+      dhEmi: getCurrentBrazilDateTime(),
       verAplic: '1.00',
       serie: '00001',
       nDPS: '1',
       dCompet: new Date().toISOString().substring(0, 7),
       tpEmit: '1', // Prestador
       cLocEmi: '',
-      
+
       prest: {
         CNPJ: '',
         xNome: '',
@@ -51,7 +52,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
           regEspTrib: '0'
         }
       },
-      
+
       toma: {
         CNPJ: '',
         xNome: '',
@@ -65,7 +66,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
           xBairro: ''
         }
       },
-      
+
       serv: {
         locPrest: {
           cLocPrestacao: ''
@@ -75,7 +76,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
           xDescServ: ''
         }
       },
-      
+
       valores: {
         vServPrest: {
           vServ: 0
@@ -124,7 +125,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     }
   };
 
-  const updateFormData = (section: keyof CompleteDPSData['infDPS'], data: any) => {
+  const updateFormData = useCallback((section: keyof CompleteDPSData['infDPS'], data: any) => {
     setFormData(prev => ({
       ...prev,
       infDPS: {
@@ -132,7 +133,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         [section]: data
       }
     }));
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,13 +144,13 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
       // Importa o gerador dinamicamente para evitar problemas de SSR
       const { CompleteNFSeGenerator } = await import('../../lib/nfse/completeGenerator');
       const generator = new CompleteNFSeGenerator();
-      
+
       // Converte dados DPS para NFSe completa
       const nfseData = convertDPSToCompleteNFSe(formData);
-      
+
       // Gera o XML da NFSe completa
       const xml = generator.generateCompleteNFSeXML(nfseData);
-      
+
       onXMLGenerated(xml);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao gerar XML');
@@ -173,7 +174,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         xTribNac: dpsData.infDPS.serv.cServ.xDescServ,
         xTribMun: dpsData.infDPS.serv.cServ.xDescServ?.substring(0, 40),
         verAplic: '1.00',
-        ambGer: dpsData.infDPS.tpAmb,
+        ambGer: '1',
         tpEmis: '2',
         procEmi: '1',
         cStat: '100',

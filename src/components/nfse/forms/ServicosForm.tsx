@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
 import { InputField, SelectField, TextAreaField, CheckboxField, FieldGroup } from '../../ui/FormField';
+import { FocusStableNumeric } from '../../ui/FocusStableNumeric';
 import { MunicipioAutocompleteField, PaisAutocompleteField, ServicoAutocompleteField } from '../../ui/AutocompleteFields';
 import { SubTabs } from '../../ui/Tabs';
 import { ServicoCompleto } from '../../../types/nfse/complete';
@@ -13,11 +15,8 @@ interface ServicosFormProps {
 
 export default function ServicosForm({ data, onChange }: ServicosFormProps) {
   const { servicos } = useServicos();
-  const updateField = (field: string, value: any) => {
-    onChange({ ...data, [field]: value });
-  };
-
-  const updateNestedField = (section: string, field: string, value: any) => {
+  
+  const updateNestedField = useCallback((section: string, field: string, value: any) => {
     onChange({
       ...data,
       [section]: {
@@ -25,7 +24,42 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
         [field]: value
       }
     });
-  };
+  }, [data, onChange]);
+
+  // Callback otimizado para informações complementares
+  const updateInfoComplementar = useCallback((field: string, value: any) => {
+    onChange({
+      ...data,
+      infoCompl: {
+        ...data.infoCompl,
+        [field]: value
+      }
+    });
+  }, [data, onChange]);
+
+  // Callback otimizado para dados da obra
+  const updateObra = useCallback((field: string, value: any) => {
+    if (!data.obra) return;
+    onChange({
+      ...data,
+      obra: {
+        ...data.obra,
+        [field]: value
+      }
+    });
+  }, [data, onChange]);
+
+  // Callback otimizado para dados do evento
+  const updateEvento = useCallback((field: string, value: any) => {
+    if (!data.atvEvento) return;
+    onChange({
+      ...data,
+      atvEvento: {
+        ...data.atvEvento,
+        [field]: value
+      }
+    });
+  }, [data, onChange]);
 
   // Determinar quais especialidades estão ativas
   const hasComercioExterior = !!data.comExt;
@@ -34,7 +68,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
   const hasEvento = !!data.atvEvento;
   const hasExploracaoRodoviaria = !!data.explRod;
 
-  const toggleEspecialidade = (tipo: string, ativo: boolean) => {
+  const toggleEspecialidade = useCallback((tipo: string, ativo: boolean) => {
     if (ativo) {
       // Adicionar a especialidade com valores padrão
       let novaEspecialidade;
@@ -100,7 +134,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
       const { [tipo as keyof ServicoCompleto]: _, ...newData } = data;
       onChange(newData as ServicoCompleto);
     }
-  };
+  }, [data, onChange]);
 
   // Componente para Local da Prestação
   const LocalPrestacaoTab = () => (
@@ -288,18 +322,13 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
               help="Moeda utilizada na operação"
             />
 
-            <InputField
+            <FocusStableNumeric
               label="Valor do Serviço em Moeda Estrangeira"
               name="vServMoeda"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.comExt.vServMoeda || ''}
-              onChange={(value) => {
-                const numValue = value === '' ? 0 : parseFloat(value) || 0;
-                updateNestedField('comExt', 'vServMoeda', numValue);
-              }}
+              value={data.comExt.vServMoeda}
+              onChange={(value) => updateNestedField('comExt', 'vServMoeda', value || 0)}
               required
+              min={0}
               help="Valor convertido para a moeda selecionada"
             />
 
@@ -401,24 +430,22 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 placeholder="Ex: Veículo Modelo X"
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Extensão Total (metros)"
                 name="extensao"
-                type="number"
-                min="0"
-                step="0.01"
-                value={data.lsadppu.extensao || ''}
-                onChange={(value) => updateNestedField('lsadppu', 'extensao', parseFloat(value) || undefined)}
+                value={data.lsadppu.extensao}
+                onChange={(value) => updateNestedField('lsadppu', 'extensao', value)}
+                min={0}
                 help="Para casos aplicáveis (ex: tubulações)"
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Número de Postes"
                 name="nPostes"
-                type="number"
-                min="0"
-                value={data.lsadppu.nPostes || ''}
-                onChange={(value) => updateNestedField('lsadppu', 'nPostes', parseInt(value) || undefined)}
+                value={data.lsadppu.nPostes}
+                onChange={(value) => updateNestedField('lsadppu', 'nPostes', value ? Math.round(value) : undefined)}
+                min={0}
+                decimals={0}
                 help="Para casos aplicáveis"
               />
             </div>
@@ -447,7 +474,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 label="Código CNO (Cadastro Nacional de Obras)"
                 name="cCno"
                 value={data.obra.cCno || ''}
-                onChange={(value) => updateNestedField('obra', 'cCno', value)}
+                onChange={(value) => updateObra('cCno', value)}
                 maxLength={20}
                 placeholder="Ex: CNO123456789"
               />
@@ -456,7 +483,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 label="Código CEI (Cadastro Específico do INSS)"
                 name="cCei"
                 value={data.obra.cCei || ''}
-                onChange={(value) => updateNestedField('obra', 'cCei', value)}
+                onChange={(value) => updateObra('cCei', value)}
                 maxLength={20}
                 placeholder="Ex: 123456789012"
               />
@@ -465,7 +492,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 label="Inscrição Imobiliária Fiscal"
                 name="inscImobFisc"
                 value={data.obra.inscImobFisc || ''}
-                onChange={(value) => updateNestedField('obra', 'inscImobFisc', value)}
+                onChange={(value) => updateObra('inscImobFisc', value)}
                 maxLength={30}
                 placeholder="Ex: 123.456.789.0001"
               />
@@ -495,7 +522,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 label="Descrição do Evento"
                 name="xDescEvento"
                 value={data.atvEvento.xDescEvento}
-                onChange={(value) => updateNestedField('atvEvento', 'xDescEvento', value)}
+                onChange={(value) => updateEvento('xDescEvento', value)}
                 required
                 maxLength={500}
                 rows={3}
@@ -507,7 +534,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 name="dtIni"
                 type="date"
                 value={data.atvEvento.dtIni}
-                onChange={(value) => updateNestedField('atvEvento', 'dtIni', value)}
+                onChange={(value) => updateEvento('dtIni', value)}
                 required
               />
 
@@ -516,7 +543,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 name="dtFim"
                 type="date"
                 value={data.atvEvento.dtFim}
-                onChange={(value) => updateNestedField('atvEvento', 'dtFim', value)}
+                onChange={(value) => updateEvento('dtFim', value)}
                 required
               />
 
@@ -524,7 +551,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 label="ID do Evento"
                 name="idEvento"
                 value={data.atvEvento.idEvento || ''}
-                onChange={(value) => updateNestedField('atvEvento', 'idEvento', value)}
+                onChange={(value) => updateEvento('idEvento', value)}
                 maxLength={50}
                 placeholder="Ex: EVT2024001"
               />
@@ -565,13 +592,13 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
                 ]}
               />
 
-              <InputField
+              <FocusStableNumeric
                 label="Número de Eixos"
                 name="nroEixos"
-                type="number"
-                min="1"
                 value={data.explRod.nroEixos}
-                onChange={(value) => updateNestedField('explRod', 'nroEixos', parseInt(value) || 1)}
+                onChange={(value) => updateNestedField('explRod', 'nroEixos', value ? Math.round(value) : 1)}
+                min={1}
+                decimals={0}
                 required
               />
 
@@ -643,7 +670,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
           label="ID do Documento Técnico (ART/RRT/DRT)"
           name="idDocTec"
           value={data.infoCompl?.idDocTec || ''}
-          onChange={(value) => updateField('infoCompl', { ...data.infoCompl, idDocTec: value })}
+          onChange={(value) => updateInfoComplementar('idDocTec', value)}
           maxLength={30}
           placeholder="Ex: ART123456789"
           help="Número da ART, RRT ou DRT quando aplicável"
@@ -653,7 +680,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
           label="Documento de Referência"
           name="docRef"
           value={data.infoCompl?.docRef || ''}
-          onChange={(value) => updateField('infoCompl', { ...data.infoCompl, docRef: value })}
+          onChange={(value) => updateInfoComplementar('docRef', value)}
           maxLength={50}
           placeholder="Ex: Contrato nº 123/2024"
           help="Documento que originou o serviço"
@@ -664,7 +691,7 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
         label="Informações Complementares"
         name="xInfComp"
         value={data.infoCompl?.xInfComp || ''}
-        onChange={(value) => updateField('infoCompl', { ...data.infoCompl, xInfComp: value })}
+        onChange={(value) => updateInfoComplementar('xInfComp', value)}
         maxLength={2000}
         rows={4}
         placeholder="Informações adicionais sobre o serviço..."

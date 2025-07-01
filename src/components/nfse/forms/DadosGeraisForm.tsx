@@ -1,8 +1,10 @@
 'use client';
 
 import { InputField, SelectField, FieldGroup } from '../../ui/FormField';
+import { FocusStableNumeric } from '../../ui/FocusStableNumeric';
 import { MunicipioAutocompleteField } from '../../ui/AutocompleteFields';
 import { CompleteDPSData } from '../../../types/nfse/complete';
+import { convertDateTimeLocalToBrazilTimezone, convertBrazilTimezoneToDateTimeLocal } from '../../../utils/dateTimeUtils';
 
 interface DadosGeraisFormProps {
   data: CompleteDPSData['infDPS'];
@@ -51,15 +53,15 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             maxLength={5}
           />
           
-          <InputField
+          <FocusStableNumeric
             label="Número da DPS"
             name="nDPS"
-            type="number"
-            value={data.nDPS}
-            onChange={(value) => updateField('nDPS', value)}
+            value={data.nDPS ? parseInt(data.nDPS) : undefined}
+            onChange={(value) => updateField('nDPS', value ? value.toString() : '')}
             required
             help="Número sequencial da DPS"
-            min="1"
+            min={1}
+            decimals={0}
           />
         </div>
       </FieldGroup>
@@ -110,10 +112,10 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             label="Data/Hora de Emissão"
             name="dhEmi"
             type="datetime-local"
-            value={data.dhEmi ? data.dhEmi.substring(0, 16) : ''}
-            onChange={(value) => updateField('dhEmi', new Date(value).toISOString())}
+            value={convertBrazilTimezoneToDateTimeLocal(data.dhEmi)}
+            onChange={(value) => updateField('dhEmi', convertDateTimeLocalToBrazilTimezone(value))}
             required
-            help="Data e hora UTC de emissão"
+            help="Data e hora de emissão (GMT-3)"
           />
           
           <InputField
