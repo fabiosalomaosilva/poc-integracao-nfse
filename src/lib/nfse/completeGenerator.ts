@@ -569,16 +569,41 @@ export class CompleteNFSeGenerator {
   }
 
   private addDPSInterno(dps: CompleteDPSData): void {
-    // Adiciona a DPS como elemento interno da NFSe
-    const dpsXML = this.generateDPSXML(dps);
-    
-    // Remove a declaração XML e adiciona como elemento interno
-    const dpsContent = dpsXML
-      .replace('<?xml version="1.0" encoding="UTF-8"?>\n', '')
-      .split('\n')
-      .map(line => '  ' + line) // Adiciona indentação
-      .join('\n');
+    // Adiciona a DPS como elemento direto no XMLBuilder
+    this.xmlBuilder
+      .openElement('DPS', {
+        'xmlns': 'http://www.sped.fazenda.gov.br/nfse',
+        'versao': dps.versao
+      })
+      .openElement('infDPS', { 'Id': dps.infDPS.Id || 'DPS00' });
 
-    this.xmlBuilder.addRaw(dpsContent);
+    // Dados básicos da DPS
+    this.addDadosBasicosDPS(dps.infDPS);
+
+    // Dados de substituição (se houver)
+    if (dps.infDPS.subst && XMLUtils.hasAnyValue(dps.infDPS.subst)) {
+      this.addDadosSubstituicao(dps.infDPS.subst);
+    }
+
+    // Prestador
+    this.addPrestador(dps.infDPS.prest);
+
+    // Tomador
+    this.addTomador(dps.infDPS.toma);
+
+    // Intermediário (se houver)
+    if (dps.infDPS.interm && XMLUtils.hasAnyValue(dps.infDPS.interm)) {
+      this.addIntermediario(dps.infDPS.interm);
+    }
+
+    // Serviços
+    this.addServicos(dps.infDPS.serv);
+
+    // Valores
+    this.addValores(dps.infDPS.valores);
+
+    this.xmlBuilder
+      .closeElement('infDPS')
+      .closeElement('DPS');
   }
 }

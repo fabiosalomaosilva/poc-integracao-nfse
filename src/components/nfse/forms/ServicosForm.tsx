@@ -294,8 +294,11 @@ export default function ServicosForm({ data, onChange }: ServicosFormProps) {
               type="number"
               step="0.01"
               min="0"
-              value={data.comExt.vServMoeda}
-              onChange={(value) => updateNestedField('comExt', 'vServMoeda', parseFloat(value) || 0)}
+              value={data.comExt.vServMoeda || ''}
+              onChange={(value) => {
+                const numValue = value === '' ? 0 : parseFloat(value) || 0;
+                updateNestedField('comExt', 'vServMoeda', numValue);
+              }}
               required
               help="Valor convertido para a moeda selecionada"
             />
