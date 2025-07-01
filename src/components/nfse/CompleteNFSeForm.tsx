@@ -184,7 +184,6 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         verAplic: '1.00',
         ambGer: '1',
         tpEmis: '2',
-        procEmi: '1',
         cStat: '100',
         dhProc: new Date().toISOString(),
         nDFSe: '1',
