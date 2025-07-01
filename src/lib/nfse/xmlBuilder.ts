@@ -195,22 +195,31 @@ export class XMLUtils {
   static formatDate(date: string): string {
     if (!date) return '';
     
-    // Se já tem timezone, mantém
-    if (date.includes('T') && (date.includes('+') || date.includes('-') || date.endsWith('Z'))) {
-      return date;
+    try {
+      // Criar um objeto Date a partir da string
+      const dateObj = new Date(date);
+      
+      // Verificar se é uma data válida
+      if (isNaN(dateObj.getTime())) {
+        return date; // Retorna como estava se não conseguir converter
+      }
+      
+      // Converter para timezone brasileiro (GMT-3)
+      const brazilTime = new Date(dateObj.getTime() - (3 * 60 * 60 * 1000));
+      
+      // Formatar no padrão ISO com timezone brasileiro
+      const year = brazilTime.getUTCFullYear();
+      const month = String(brazilTime.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(brazilTime.getUTCDate()).padStart(2, '0');
+      const hours = String(brazilTime.getUTCHours()).padStart(2, '0');
+      const minutes = String(brazilTime.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(brazilTime.getUTCSeconds()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}-03:00`;
+    } catch (error) {
+      console.warn('Error formatting date:', date, error);
+      return date; // Retorna como estava em caso de erro
     }
-    
-    // Se é só data, adiciona hora e timezone
-    if (date.length === 10) {
-      return `${date}T00:00:00-03:00`;
-    }
-    
-    // Se tem hora mas não tem timezone, adiciona
-    if (date.includes('T') && !date.includes('+') && !date.includes('-') && !date.endsWith('Z')) {
-      return `${date}-03:00`;
-    }
-    
-    return date;
   }
 
   static sanitizeText(text: string): string {

@@ -142,7 +142,9 @@ export function parseNFSeXML(xmlContent: string): CompleteDPSData {
       vincPrest: getText('vincPrest', comExtElement || undefined),
       tpMoeda: getText('tpMoeda', comExtElement || undefined),
       vServMoeda: getNumber('vServMoeda', comExtElement || undefined),
-      mecApoioFomento: getText('mecApoioFomento', comExtElement || undefined),
+      mecAFComexP: getText('mecAFComexP', comExtElement || undefined),
+      mecAFComexT: getText('mecAFComexT', comExtElement || undefined),
+      movTempBens: getText('movTempBens', comExtElement || undefined),
       mdic: getText('mdic', comExtElement || undefined),
       nroDI: getText('nroDI', comExtElement || undefined),
       nroRE: getText('nroRE', comExtElement || undefined)
@@ -157,6 +159,12 @@ export function parseNFSeXML(xmlContent: string): CompleteDPSData {
   const tribElement = valoresElement?.querySelector('trib');
   const tribMunElement = tribElement?.querySelector('tribMun');
   
+  // Extrair tributação federal e total de tributos
+  const tribFedElement = tribElement?.querySelector('tribFed');
+  const piscofinElement = tribFedElement?.querySelector('piscofins');
+  const totTribElement = tribElement?.querySelector('totTrib');
+  const vTotTribElement = totTribElement?.querySelector('vTotTrib');
+
   const valores: any = {
     vServPrest: {
       vServ: getNumber('vServ', vServPrestElement || undefined),
@@ -165,13 +173,34 @@ export function parseNFSeXML(xmlContent: string): CompleteDPSData {
     vLiq: getNumber('vLiq', valoresElement || undefined),
     trib: {
       tribMun: {
-        tribISSQN: getText('tribISSQN', tribMunElement || undefined),
+        tribISSQN: getText('tribISSQN', tribMunElement || undefined) || '1',
         pAliq: getNumber('pAliq', tribMunElement || undefined),
         vBC: getNumber('vBC', tribMunElement || undefined),
         vISS: getNumber('vISS', tribMunElement || undefined),
         tpRetISSQN: getText('tpRetISSQN', tribMunElement || undefined) || '1',
         cPaisResult: getText('cPaisResult', tribMunElement || undefined),
         tpImunidade: getText('tpImunidade', tribMunElement || undefined)
+      },
+      tribFed: {
+        piscofins: {
+          CST: getText('CST', piscofinElement || undefined) || '00',
+          vBCPisCofins: getNumber('vBCPisCofins', piscofinElement || undefined),
+          pAliqPis: getNumber('pAliqPis', piscofinElement || undefined),
+          pAliqCofins: getNumber('pAliqCofins', piscofinElement || undefined),
+          vPis: getNumber('vPis', piscofinElement || undefined),
+          vCofins: getNumber('vCofins', piscofinElement || undefined),
+          tpRetPisCofins: getText('tpRetPisCofins', piscofinElement || undefined)
+        },
+        vRetCP: getNumber('vRetCP', tribFedElement || undefined),
+        vRetIRRF: getNumber('vRetIRRF', tribFedElement || undefined),
+        vRetCSLL: getNumber('vRetCSLL', tribFedElement || undefined)
+      },
+      totTrib: {
+        vTotTrib: {
+          vTotTribFed: getNumber('vTotTribFed', vTotTribElement || undefined),
+          vTotTribEst: getNumber('vTotTribEst', vTotTribElement || undefined),
+          vTotTribMun: getNumber('vTotTribMun', vTotTribElement || undefined)
+        }
       }
     }
   };

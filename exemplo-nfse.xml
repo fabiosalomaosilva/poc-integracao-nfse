@@ -73,6 +73,23 @@
           <vISS>19.00</vISS>
           <tpRetISSQN>1</tpRetISSQN>
         </tribMun>
+        <tribFed>
+          <piscofins>
+            <CST>00</CST>
+            <vPis>0.00</vPis>
+            <vCofins>0.00</vCofins>
+          </piscofins>
+          <vRetCP>0.00</vRetCP>
+          <vRetIRRF>0.00</vRetIRRF>
+          <vRetCSLL>0.00</vRetCSLL>
+        </tribFed>
+        <totTrib>
+          <vTotTrib>
+            <vTotTribFed>0.00</vTotTribFed>
+            <vTotTribEst>0.00</vTotTribEst>
+            <vTotTribMun>0.60</vTotTribMun>
+          </vTotTrib>
+        </totTrib>
       </trib>
     </valores>
   </infDPS>
