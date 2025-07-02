@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { InputField, SelectField, FieldGroup } from '../../ui/FormField';
 import { MunicipioAutocompleteField, PaisAutocompleteField } from '../../ui/AutocompleteFields';
 import { InputFieldWithTestButton } from '../../ui/InputFieldWithTestButton';
@@ -72,10 +73,10 @@ export default function PrestadorForm({ data, onChange }: PrestadorFormProps) {
   };
 
   // Determinar tipo de identificação selecionado
-  const tipoIdentificacao = data.CNPJ ? 'CNPJ' : 
-                           data.CPF ? 'CPF' : 
-                           data.NIF ? 'NIF' : 
-                           data.CAEPF ? 'CAEPF' : 'CNPJ';
+  const tipoIdentificacao = data.CNPJ ? 'CNPJ' :
+    data.CPF ? 'CPF' :
+      data.NIF ? 'NIF' :
+        data.CAEPF ? 'CAEPF' : 'CNPJ';
 
   const setTipoIdentificacao = (tipo: string, valor: string) => {
     const newData = { ...data };
@@ -84,7 +85,7 @@ export default function PrestadorForm({ data, onChange }: PrestadorFormProps) {
     delete newData.CPF;
     delete newData.NIF;
     delete newData.CAEPF;
-    
+
     // Definir a nova
     onChange({
       ...newData,
@@ -167,39 +168,49 @@ export default function PrestadorForm({ data, onChange }: PrestadorFormProps) {
           />
 
           <InputFieldWithTestButton
-            label={tipoIdentificacao === 'CNPJ' ? 'CNPJ' : 
-                   tipoIdentificacao === 'CPF' ? 'CPF' : 
-                   tipoIdentificacao === 'NIF' ? 'NIF' : 'CAEPF'}
+            label={tipoIdentificacao === 'CNPJ' ? 'CNPJ' :
+              tipoIdentificacao === 'CPF' ? 'CPF' :
+                tipoIdentificacao === 'NIF' ? 'NIF' : 'CAEPF'}
             name="identificacao"
             value={(data[tipoIdentificacao as keyof PrestadorCompleto] as string) || ''}
             onChange={(valor) => setTipoIdentificacao(tipoIdentificacao, valor)}
             required
-            placeholder={tipoIdentificacao === 'CNPJ' ? '00.000.000/0000-00' : 
-                        tipoIdentificacao === 'CPF' ? '000.000.000-00' : 
-                        'Digite o número'}
+            placeholder={tipoIdentificacao === 'CNPJ' ? '00.000.000/0000-00' :
+              tipoIdentificacao === 'CPF' ? '000.000.000-00' :
+                'Digite o número'}
             maxLength={tipoIdentificacao === 'CNPJ' ? 14 : tipoIdentificacao === 'CPF' ? 11 : 20}
             help={`Número do ${tipoIdentificacao} sem formatação`}
             testButtonType={tipoIdentificacao === 'CNPJ' ? 'cnpj' : tipoIdentificacao === 'CPF' ? 'cpf' : undefined}
-            onTestDataGenerated={(testData) => {
+            onTestDataGenerated={useCallback((testData: any) => {
               if (testData.type === 'pj') {
                 // Preencher dados da pessoa jurídica
-                onChange({
+                const newData = {
                   ...data,
                   CNPJ: testData.cnpj,
                   xNome: testData.razaoSocial,
                   xFant: testData.nomeFantasia,
                   IM: testData.inscricaoMunicipal
-                });
+                };
+                // Limpar outros tipos de documento
+                delete newData.CPF;
+                delete newData.NIF;
+                delete newData.CAEPF;
+                onChange(newData);
               } else if (testData.type === 'pf') {
                 // Preencher dados da pessoa física
-                onChange({
+                const newData = {
                   ...data,
                   CPF: testData.cpf,
                   xNome: testData.nomeCompleto,
                   IM: testData.inscricaoMunicipal
-                });
+                };
+                // Limpar outros tipos de documento
+                delete newData.CNPJ;
+                delete newData.NIF;
+                delete newData.CAEPF;
+                onChange(newData);
               }
-            }}
+            }, [data, onChange])}
           />
 
           <InputField
@@ -245,7 +256,7 @@ export default function PrestadorForm({ data, onChange }: PrestadorFormProps) {
       >
         {/* Seletor Nacional/Exterior */}
         <div className="flex items-center space-x-6 mb-4">
-          <label className="flex items-center">
+          <label className="flex items-center text-gray-700">
             <input
               type="radio"
               name="tipoEndereco"
@@ -255,7 +266,7 @@ export default function PrestadorForm({ data, onChange }: PrestadorFormProps) {
             />
             Endereço Nacional
           </label>
-          <label className="flex items-center">
+          <label className="flex items-center text-gray-700">
             <input
               type="radio"
               name="tipoEndereco"

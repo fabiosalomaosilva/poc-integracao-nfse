@@ -40,29 +40,41 @@ export function InputFieldWithTestButton({
   onTestDataGenerated
 }: InputFieldWithTestButtonProps) {
   
-  const handleGenerateTestData = () => {
+  const handleGenerateTestData = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Prevenir completamente qualquer comportamento de formulário
+    e.preventDefault();
+    e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    
     if (!testButtonType || !onTestDataGenerated) return;
 
-    if (testButtonType === 'cnpj') {
-      const testData = generateTestDataPJ();
-      onChange(testData.cnpj);
-      onTestDataGenerated({
-        type: 'pj',
-        cnpj: testData.cnpj,
-        razaoSocial: testData.razaoSocial,
-        nomeFantasia: testData.nomeFantasia,
-        inscricaoMunicipal: testData.inscricaoMunicipal
-      });
-    } else if (testButtonType === 'cpf') {
-      const testData = generateTestDataPF();
-      onChange(testData.cpf);
-      onTestDataGenerated({
-        type: 'pf',
-        cpf: testData.cpf,
-        nomeCompleto: testData.nomeCompleto,
-        inscricaoMunicipal: testData.inscricaoMunicipal
-      });
-    }
+    // Usar setTimeout para garantir que a ação ocorre depois do evento
+    setTimeout(() => {
+      try {
+        if (testButtonType === 'cnpj') {
+          const testData = generateTestDataPJ();
+          onChange(testData.cnpj);
+          onTestDataGenerated({
+            type: 'pj',
+            cnpj: testData.cnpj,
+            razaoSocial: testData.razaoSocial,
+            nomeFantasia: testData.nomeFantasia,
+            inscricaoMunicipal: testData.inscricaoMunicipal
+          });
+        } else if (testButtonType === 'cpf') {
+          const testData = generateTestDataPF();
+          onChange(testData.cpf);
+          onTestDataGenerated({
+            type: 'pf',
+            cpf: testData.cpf,
+            nomeCompleto: testData.nomeCompleto,
+            inscricaoMunicipal: testData.inscricaoMunicipal
+          });
+        }
+      } catch (error) {
+        console.error('Error generating test data:', error);
+      }
+    }, 0);
   };
 
   return (
@@ -98,8 +110,8 @@ export function InputFieldWithTestButton({
             type="button"
             onClick={handleGenerateTestData}
             className="
-              px-3 py-2 bg-green-50 border border-l-0 border-gray-300 rounded-r-md
-              text-green-700 hover:bg-green-100 focus:outline-none focus:ring-1 
+              px-3 py-2 bg-green-100 border border-l-0 border-gray-300 rounded-r-md
+              text-green-800 hover:bg-green-200 focus:outline-none focus:ring-1 
               focus:ring-green-500 focus:border-green-500 transition-colors
               text-xs font-medium min-w-[60px]
             "
@@ -116,10 +128,10 @@ export function InputFieldWithTestButton({
       </div>
 
       {help && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-600">
           {help}
           {testButtonType && (
-            <span className="block mt-1 text-green-600">
+            <span className="block mt-1 text-green-700 font-medium">
               💡 Use o botão "Teste" para gerar {testButtonType.toUpperCase()} válido automaticamente
             </span>
           )}

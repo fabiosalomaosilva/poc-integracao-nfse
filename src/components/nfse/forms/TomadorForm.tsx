@@ -52,11 +52,11 @@ export default function TomadorForm({ data, onChange }: TomadorFormProps) {
   };
 
   // Determinar tipo de identificação selecionado
-  const tipoIdentificacao = data.CNPJ ? 'CNPJ' : 
-                           data.CPF ? 'CPF' : 
-                           data.NIF ? 'NIF' : 
-                           data.cNaoNIF ? 'cNaoNIF' :
-                           data.CAEPF ? 'CAEPF' : 'CNPJ';
+  const tipoIdentificacao = data.CNPJ ? 'CNPJ' :
+    data.CPF ? 'CPF' :
+      data.NIF ? 'NIF' :
+        data.cNaoNIF ? 'cNaoNIF' :
+          data.CAEPF ? 'CAEPF' : 'CNPJ';
 
   const setTipoIdentificacao = (tipo: string, valor: string) => {
     const newData = { ...data };
@@ -66,7 +66,7 @@ export default function TomadorForm({ data, onChange }: TomadorFormProps) {
     delete newData.NIF;
     delete newData.cNaoNIF;
     delete newData.CAEPF;
-    
+
     // Definir a nova
     onChange({
       ...newData,
@@ -128,25 +128,25 @@ export default function TomadorForm({ data, onChange }: TomadorFormProps) {
           />
 
           <InputFieldWithTestButton
-            label={tipoIdentificacao === 'CNPJ' ? 'CNPJ' : 
-                   tipoIdentificacao === 'CPF' ? 'CPF' : 
-                   tipoIdentificacao === 'NIF' ? 'NIF' : 
-                   tipoIdentificacao === 'cNaoNIF' ? 'Código do País' : 'CAEPF'}
+            label={tipoIdentificacao === 'CNPJ' ? 'CNPJ' :
+              tipoIdentificacao === 'CPF' ? 'CPF' :
+                tipoIdentificacao === 'NIF' ? 'NIF' :
+                  tipoIdentificacao === 'cNaoNIF' ? 'Código do País' : 'CAEPF'}
             name="identificacao"
             value={(data[tipoIdentificacao as keyof TomadorCompleto] as string) || ''}
             onChange={(valor) => setTipoIdentificacao(tipoIdentificacao, valor)}
             required
-            placeholder={tipoIdentificacao === 'CNPJ' ? '00.000.000/0000-00' : 
-                        tipoIdentificacao === 'CPF' ? '000.000.000-00' : 
-                        tipoIdentificacao === 'cNaoNIF' ? 'Ex: BR, USA' :
-                        'Digite o número'}
-            maxLength={tipoIdentificacao === 'CNPJ' ? 14 : 
-                      tipoIdentificacao === 'CPF' ? 11 : 
-                      tipoIdentificacao === 'cNaoNIF' ? 3 : 20}
-            help={tipoIdentificacao === 'CNPJ' || tipoIdentificacao === 'CPF' ? 
-                  `Número do ${tipoIdentificacao} sem formatação` :
-                  tipoIdentificacao === 'cNaoNIF' ? 'Código do país quando não possui NIF' :
-                  `Número do ${tipoIdentificacao}`}
+            placeholder={tipoIdentificacao === 'CNPJ' ? '00.000.000/0000-00' :
+              tipoIdentificacao === 'CPF' ? '000.000.000-00' :
+                tipoIdentificacao === 'cNaoNIF' ? 'Ex: BR, USA' :
+                  'Digite o número'}
+            maxLength={tipoIdentificacao === 'CNPJ' ? 14 :
+              tipoIdentificacao === 'CPF' ? 11 :
+                tipoIdentificacao === 'cNaoNIF' ? 3 : 20}
+            help={tipoIdentificacao === 'CNPJ' || tipoIdentificacao === 'CPF' ?
+              `Número do ${tipoIdentificacao} sem formatação` :
+              tipoIdentificacao === 'cNaoNIF' ? 'Código do país quando não possui NIF' :
+                `Número do ${tipoIdentificacao}`}
             testButtonType={tipoIdentificacao === 'CNPJ' ? 'cnpj' : tipoIdentificacao === 'CPF' ? 'cpf' : undefined}
             onTestDataGenerated={(testData) => {
               if (testData.type === 'pj') {
@@ -215,7 +215,7 @@ export default function TomadorForm({ data, onChange }: TomadorFormProps) {
       >
         {/* Seletor Nacional/Exterior */}
         <div className="flex items-center space-x-6 mb-4">
-          <label className="flex items-center">
+          <label className="flex items-center text-gray-700">
             <input
               type="radio"
               name="tipoEnderecoTomador"
@@ -225,7 +225,7 @@ export default function TomadorForm({ data, onChange }: TomadorFormProps) {
             />
             Endereço Nacional
           </label>
-          <label className="flex items-center">
+          <label className="flex items-center text-gray-700">
             <input
               type="radio"
               name="tipoEnderecoTomador"
