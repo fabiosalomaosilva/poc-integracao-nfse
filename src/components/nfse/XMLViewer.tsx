@@ -57,8 +57,10 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     setSending(true);
     setSendResult(null);
 
+    const urlBase = process.env.NEXT_PUBLIC_API_URL || ''
+    console.log(urlBase)
     try {
-      const response = await fetch('https://nfsesigningapi-a9bsh7ftapacb2hv.brazilsouth-01.azurewebsites.net/api/NFSe/sign-and-send', {
+      const response = await fetch(`${urlBase}/api/NFSe/sign-and-send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
