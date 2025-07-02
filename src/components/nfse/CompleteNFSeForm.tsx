@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useNFSeFormState } from '../../hooks/usePersistentState';
 import Tabs from '../ui/Tabs';
 import DadosGeraisForm from './forms/DadosGeraisForm';
 import PrestadorForm from './forms/PrestadorForm';
@@ -12,6 +13,7 @@ import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
 import { loadXMLTemplate } from '../../utils/xmlTemplateParser';
 import { getCurrentBrazilDateTime } from '../../utils/dateTimeUtils';
 import XMLUploader from '../ui/XMLUploader';
+import { getSavedDataPreview } from '../../hooks/usePersistentState';
 
 interface CompleteNFSeFormProps {
   onXMLGenerated: (xml: string) => void;
@@ -22,8 +24,8 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
   const [error, setError] = useState<string>('');
   const [templateLoading, setTemplateLoading] = useState(true);
 
-  // Estado do formulário completo
-  const [formData, setFormData] = useState<CompleteDPSData>({
+  // Estado inicial do formulário
+  const initialFormData: CompleteDPSData = {
     versao: '1.00',
     infDPS: {
       Id: '',
@@ -91,15 +93,26 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         }
       }
     }
-  });
+  };
 
-  // Carregar template XML na inicialização
+  // Estado do formulário com persistência
+  const { state: formData, setState: setFormData, isLoaded, clearPersistentState, resetWithData } = useNFSeFormState(initialFormData);
+
+  // Carregar template XML apenas na inicialização 
   useEffect(() => {
+    if (!isLoaded) return;
+
     const loadTemplate = async () => {
       try {
         setTemplateLoading(true);
-        const templateData = await loadXMLTemplate();
-        setFormData(templateData);
+        
+        // Verificar se é a primeira vez que carrega (sem dados no localStorage)
+        const hasFormData = formData.infDPS.prest.xNome || formData.infDPS.toma.xNome || formData.infDPS.prest.CNPJ;
+        
+        if (!hasFormData) {
+          const templateData = await loadXMLTemplate();
+          setFormData(templateData);
+        }
       } catch (error) {
         console.error('Erro ao carregar template:', error);
         setError('Erro ao carregar template XML. Usando dados padrão.');
@@ -109,12 +122,14 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     };
 
     loadTemplate();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded]); // Apenas quando isLoaded muda
 
-  // Função para resetar o formulário com dados do template
+  // Função para resetar o formulário e limpar dados persistentes
   const resetForm = async () => {
     try {
       setTemplateLoading(true);
+      clearPersistentState(); // Limpa dados do localStorage
       const templateData = await loadXMLTemplate();
       setFormData(templateData);
       setError('');
@@ -134,14 +149,14 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         [section]: data
       }
     }));
-  }, []);
+  }, [setFormData]);
 
   // Função para carregar XML e popular formulário
   const handleXMLLoad = useCallback((xmlData: CompleteDPSData) => {
-    setFormData(xmlData);
+    resetWithData(xmlData); // Usa resetWithData para sobrescrever dados persistentes
     setError('');
     console.log('XML carregado e formulário atualizado:', xmlData);
-  }, []);
+  }, [resetWithData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -334,8 +349,31 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     );
   }
 
+  // Verificar se há dados salvos para mostrar aviso
+  const savedDataInfo = getSavedDataPreview();
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {savedDataInfo.hasData && isLoaded && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">Dados restaurados</h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Formulário carregado com dados salvos anteriormente. 
+                {savedDataInfo.lastModified && `Última modificação: ${savedDataInfo.lastModified}.`}
+                {savedDataInfo.dataSize && ` Tamanho: ${savedDataInfo.dataSize}.`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
           <div className="flex">
@@ -355,26 +393,32 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
       <Tabs tabs={tabs} defaultTab="dados-gerais" />
 
       {/* Actions */}
-      <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-        <button
-          type="button"
-          onClick={() => {
-            if (confirm('Deseja resetar o formulário com os dados do template?')) {
-              resetForm();
-            }
-          }}
-          disabled={templateLoading}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {templateLoading ? 'Carregando...' : 'Resetar com Template'}
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? 'Gerando XML...' : 'Gerar XML'}
-        </button>
+      <div className="space-y-4 pt-6 border-t border-gray-200">
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('Deseja resetar o formulário? Todos os dados preenchidos serão perdidos e o formulário voltará aos dados do template.')) {
+                resetForm();
+              }
+            }}
+            disabled={templateLoading}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {templateLoading ? 'Carregando...' : 'Resetar Formulário'}
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? 'Gerando XML...' : 'Gerar XML'}
+          </button>
+        </div>
+        
+        <div className="text-xs text-gray-500 text-center">
+          💡 Os dados do formulário são salvos automaticamente no navegador. Use "Resetar Formulário" para limpar todos os dados.
+        </div>
       </div>
     </form>
   );

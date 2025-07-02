@@ -52,11 +52,11 @@ export default function IntermediarioForm({ data, onChange }: IntermediarioFormP
   };
 
   // Determinar tipo de identificação selecionado
-  const tipoIdentificacao = data.CNPJ ? 'CNPJ' : 
-                           data.CPF ? 'CPF' : 
-                           data.NIF ? 'NIF' : 
-                           data.cNaoNIF ? 'cNaoNIF' :
-                           data.CAEPF ? 'CAEPF' : 'CNPJ';
+  const tipoIdentificacao = data.CNPJ ? 'CNPJ' :
+    data.CPF ? 'CPF' :
+      data.NIF ? 'NIF' :
+        data.cNaoNIF ? 'cNaoNIF' :
+          data.CAEPF ? 'CAEPF' : 'CNPJ';
 
   const setTipoIdentificacao = (tipo: string, valor: string) => {
     const newData = { ...data };
@@ -66,7 +66,7 @@ export default function IntermediarioForm({ data, onChange }: IntermediarioFormP
     delete newData.NIF;
     delete newData.cNaoNIF;
     delete newData.CAEPF;
-    
+
     // Definir a nova
     onChange({
       ...newData,
@@ -120,8 +120,8 @@ export default function IntermediarioForm({ data, onChange }: IntermediarioFormP
             <h3 className="text-sm font-medium text-blue-800">Sobre o Intermediário</h3>
             <div className="text-sm text-blue-700 mt-1">
               <p>
-                O intermediário é a pessoa física ou jurídica que atua como agente, representante ou mandatário 
-                na operação entre prestador e tomador. Seus dados são obrigatórios quando o Tipo de Emitente 
+                O intermediário é a pessoa física ou jurídica que atua como agente, representante ou mandatário
+                na operação entre prestador e tomador. Seus dados são obrigatórios quando o Tipo de Emitente
                 for &quot;Intermediário&quot;.
               </p>
             </div>
@@ -148,25 +148,25 @@ export default function IntermediarioForm({ data, onChange }: IntermediarioFormP
           />
 
           <InputFieldWithTestButton
-            label={tipoIdentificacao === 'CNPJ' ? 'CNPJ' : 
-                   tipoIdentificacao === 'CPF' ? 'CPF' : 
-                   tipoIdentificacao === 'NIF' ? 'NIF' : 
-                   tipoIdentificacao === 'cNaoNIF' ? 'Código do País' : 'CAEPF'}
+            label={tipoIdentificacao === 'CNPJ' ? 'CNPJ' :
+              tipoIdentificacao === 'CPF' ? 'CPF' :
+                tipoIdentificacao === 'NIF' ? 'NIF' :
+                  tipoIdentificacao === 'cNaoNIF' ? 'Código do País' : 'CAEPF'}
             name="identificacao"
             value={(data[tipoIdentificacao as keyof IntermediarioCompleto] as string) || ''}
             onChange={(valor) => setTipoIdentificacao(tipoIdentificacao, valor)}
             required
-            placeholder={tipoIdentificacao === 'CNPJ' ? '00.000.000/0000-00' : 
-                        tipoIdentificacao === 'CPF' ? '000.000.000-00' : 
-                        tipoIdentificacao === 'cNaoNIF' ? 'Ex: BR, USA' :
-                        'Digite o número'}
-            maxLength={tipoIdentificacao === 'CNPJ' ? 14 : 
-                      tipoIdentificacao === 'CPF' ? 11 : 
-                      tipoIdentificacao === 'cNaoNIF' ? 3 : 20}
-            help={tipoIdentificacao === 'CNPJ' || tipoIdentificacao === 'CPF' ? 
-                  `Número do ${tipoIdentificacao} sem formatação` :
-                  tipoIdentificacao === 'cNaoNIF' ? 'Código do país quando não possui NIF' :
-                  `Número do ${tipoIdentificacao}`}
+            placeholder={tipoIdentificacao === 'CNPJ' ? '00.000.000/0000-00' :
+              tipoIdentificacao === 'CPF' ? '000.000.000-00' :
+                tipoIdentificacao === 'cNaoNIF' ? 'Ex: BR, USA' :
+                  'Digite o número'}
+            maxLength={tipoIdentificacao === 'CNPJ' ? 14 :
+              tipoIdentificacao === 'CPF' ? 11 :
+                tipoIdentificacao === 'cNaoNIF' ? 3 : 20}
+            help={tipoIdentificacao === 'CNPJ' || tipoIdentificacao === 'CPF' ?
+              `Número do ${tipoIdentificacao} sem formatação` :
+              tipoIdentificacao === 'cNaoNIF' ? 'Código do país quando não possui NIF' :
+                `Número do ${tipoIdentificacao}`}
             testButtonType={tipoIdentificacao === 'CNPJ' ? 'cnpj' : tipoIdentificacao === 'CPF' ? 'cpf' : undefined}
             onTestDataGenerated={(testData) => {
               if (testData.type === 'pj') {
@@ -235,7 +235,7 @@ export default function IntermediarioForm({ data, onChange }: IntermediarioFormP
       >
         {/* Seletor Nacional/Exterior */}
         <div className="flex items-center space-x-6 mb-4">
-          <label className="flex items-center">
+          <label className="flex items-center text-gray-700">
             <input
               type="radio"
               name="tipoEnderecoIntermediario"
@@ -245,7 +245,7 @@ export default function IntermediarioForm({ data, onChange }: IntermediarioFormP
             />
             Endereço Nacional
           </label>
-          <label className="flex items-center">
+          <label className="flex items-center text-gray-700">
             <input
               type="radio"
               name="tipoEnderecoIntermediario"

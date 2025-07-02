@@ -80,7 +80,7 @@ export function InputField({
           ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}
         `}
       />
-      {help && <p className="text-xs text-gray-500">{help}</p>}
+      {help && <p className="text-xs text-gray-600">{help}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -127,7 +127,7 @@ export function SelectField({
           </option>
         ))}
       </select>
-      {help && <p className="text-xs text-gray-500">{help}</p>}
+      {help && <p className="text-xs text-gray-600">{help}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -168,11 +168,11 @@ export function TextAreaField({
         `}
       />
       {maxLength && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-600">
           {value.length}/{maxLength} caracteres
         </p>
       )}
-      {help && <p className="text-xs text-gray-500">{help}</p>}
+      {help && <p className="text-xs text-gray-600">{help}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -204,12 +204,12 @@ export function CheckboxField({
             ${error ? 'border-red-300' : ''}
           `}
         />
-        <label htmlFor={name} className="ml-2 block text-sm text-gray-700">
+        <label htmlFor={name} className="ml-2 block text-sm text-gray-800 font-medium">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       </div>
-      {help && <p className="text-xs text-gray-500 mt-1">{help}</p>}
+      {help && <p className="text-xs text-gray-600 mt-1">{help}</p>}
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
     </div>
   );
@@ -228,7 +228,7 @@ export function FieldGroup({ title, description, children, className = '' }: Fie
       <div>
         <h3 className="text-base font-medium text-gray-900">{title}</h3>
         {description && (
-          <p className="text-sm text-gray-500 mt-1">{description}</p>
+          <p className="text-sm text-gray-600 mt-1">{description}</p>
         )}
       </div>
       <div className="space-y-4">

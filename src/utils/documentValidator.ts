@@ -21,30 +21,36 @@ export function validarCNPJ(cnpj: string): boolean {
     return false;
   }
 
-  // Validação dos dígitos verificadores
-  const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  const pesos2 = [6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 2];
-
-  // Primeiro dígito verificador
+  // Usar o mesmo algoritmo do gerador (peso cíclico 2-9)
+  
+  // Calcular primeiro dígito verificador
   let soma = 0;
-  for (let i = 0; i < 12; i++) {
-    soma += parseInt(cnpjLimpo[i]) * pesos1[i];
+  let peso = 2;
+  for (let i = 11; i >= 0; i--) {
+    soma += parseInt(cnpjLimpo.charAt(i)) * peso;
+    peso++;
+    if (peso === 10) peso = 2;
   }
-  let resto = soma % 11;
-  const dv1 = resto < 2 ? 0 : 11 - resto;
-
+  
+  let dv1 = soma % 11;
+  dv1 = dv1 < 2 ? 0 : 11 - dv1;
+  
   if (dv1 !== parseInt(cnpjLimpo[12])) {
     return false;
   }
-
-  // Segundo dígito verificador
+  
+  // Calcular segundo dígito verificador
   soma = 0;
-  for (let i = 0; i < 13; i++) {
-    soma += parseInt(cnpjLimpo[i]) * pesos2[i];
+  peso = 2;
+  for (let i = 12; i >= 0; i--) {
+    soma += parseInt(cnpjLimpo.charAt(i)) * peso;
+    peso++;
+    if (peso === 10) peso = 2;
   }
-  resto = soma % 11;
-  const dv2 = resto < 2 ? 0 : 11 - resto;
-
+  
+  let dv2 = soma % 11;
+  dv2 = dv2 < 2 ? 0 : 11 - dv2;
+  
   return dv2 === parseInt(cnpjLimpo[13]);
 }
 

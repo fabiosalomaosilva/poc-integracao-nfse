@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 // Tipos dos dados
 export interface MunicipioData {
@@ -20,116 +20,95 @@ export interface ServicoData {
   descricao: string;
 }
 
-// Hook para carregar dados de municípios
+// Função para carregar municípios com fallback
+async function fetchMunicipios(): Promise<MunicipioData[]> {
+  try {
+    const response = await fetch('/api/data/municipios');
+    if (!response.ok) {
+      throw new Error('API não disponível');
+    }
+    return await response.json();
+  } catch {
+    // Fallback para importação estática
+    const data = await import('../data/CdMunicipio.json');
+    return data.default;
+  }
+}
+
+// Função para carregar países com fallback
+async function fetchPaises(): Promise<PaisData[]> {
+  try {
+    const response = await fetch('/api/data/paises');
+    if (!response.ok) {
+      throw new Error('API não disponível');
+    }
+    return await response.json();
+  } catch {
+    // Fallback para importação estática
+    const data = await import('../data/CdPais.json');
+    return data.default;
+  }
+}
+
+// Função para carregar serviços com fallback
+async function fetchServicos(): Promise<ServicoData[]> {
+  try {
+    const response = await fetch('/api/data/servicos');
+    if (!response.ok) {
+      throw new Error('API não disponível');
+    }
+    return await response.json();
+  } catch {
+    // Fallback para importação estática
+    const data = await import('../data/itensServico.json');
+    return data.default;
+  }
+}
+
+// Hook para carregar dados de municípios com cache
 export function useMunicipios() {
-  const [municipios, setMunicipios] = useState<MunicipioData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: municipios = [], isLoading: loading, error } = useQuery({
+    queryKey: ['municipios'],
+    queryFn: fetchMunicipios,
+    staleTime: 1000 * 60 * 60, // 1 hora
+    gcTime: 1000 * 60 * 60 * 24, // 24 horas
+  });
 
-  useEffect(() => {
-    const loadMunicipios = async () => {
-      try {
-        const response = await fetch('/api/data/municipios');
-        if (!response.ok) {
-          // Fallback para importação estática
-          const data = await import('../data/CdMunicipio.json');
-          setMunicipios(data.default);
-        } else {
-          const data = await response.json();
-          setMunicipios(data);
-        }
-      } catch {
-        try {
-          // Fallback para importação estática
-          const data = await import('../data/CdMunicipio.json');
-          setMunicipios(data.default);
-        } catch (fallbackErr) {
-          setError('Erro ao carregar dados de municípios');
-          console.error('Erro ao carregar municípios:', fallbackErr);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadMunicipios();
-  }, []);
-
-  return { municipios, loading, error };
+  return { 
+    municipios, 
+    loading, 
+    error: error ? 'Erro ao carregar dados de municípios' : null 
+  };
 }
 
-// Hook para carregar dados de países
+// Hook para carregar dados de países com cache
 export function usePaises() {
-  const [paises, setPaises] = useState<PaisData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: paises = [], isLoading: loading, error } = useQuery({
+    queryKey: ['paises'],
+    queryFn: fetchPaises,
+    staleTime: 1000 * 60 * 60, // 1 hora
+    gcTime: 1000 * 60 * 60 * 24, // 24 horas
+  });
 
-  useEffect(() => {
-    const loadPaises = async () => {
-      try {
-        const response = await fetch('/api/data/paises');
-        if (!response.ok) {
-          // Fallback para importação estática
-          const data = await import('../data/CdPais.json');
-          setPaises(data.default);
-        } else {
-          const data = await response.json();
-          setPaises(data);
-        }
-      } catch {
-        try {
-          // Fallback para importação estática
-          const data = await import('../data/CdPais.json');
-          setPaises(data.default);
-        } catch (fallbackErr) {
-          setError('Erro ao carregar dados de países');
-          console.error('Erro ao carregar países:', fallbackErr);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPaises();
-  }, []);
-
-  return { paises, loading, error };
+  return { 
+    paises, 
+    loading, 
+    error: error ? 'Erro ao carregar dados de países' : null 
+  };
 }
 
-// Hook para carregar dados de serviços
+// Hook para carregar dados de serviços com cache
 export function useServicos() {
-  const [servicos, setServicos] = useState<ServicoData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: servicos = [], isLoading: loading, error } = useQuery({
+    queryKey: ['servicos'],
+    queryFn: fetchServicos,
+    staleTime: 1000 * 60 * 60, // 1 hora
+    gcTime: 1000 * 60 * 60 * 24, // 24 horas
+  });
 
-  useEffect(() => {
-    const loadServicos = async () => {
-      try {
-        const response = await fetch('/api/data/servicos');
-        if (!response.ok) {
-          // Fallback para importação estática
-          const data = await import('../data/itensServico.json');
-          setServicos(data.default);
-        } else {
-          const data = await response.json();
-          setServicos(data);
-        }
-      } catch {
-        try {
-          // Fallback para importação estática
-          const data = await import('../data/itensServico.json');
-          setServicos(data.default);
-        } catch (fallbackErr) {
-          setError('Erro ao carregar dados de serviços');
-          console.error('Erro ao carregar serviços:', fallbackErr);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadServicos();
-  }, []);
-
-  return { servicos, loading, error };
+  return { 
+    servicos, 
+    loading, 
+    error: error ? 'Erro ao carregar dados de serviços' : null 
+  };
 }

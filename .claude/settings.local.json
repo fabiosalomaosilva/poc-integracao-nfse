@@ -6,7 +6,9 @@
       "Bash(pkill:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run build:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

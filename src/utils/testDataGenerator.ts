@@ -78,10 +78,10 @@ export function generateValidCNPJ(): string {
   for (let i = 0; i < 8; i++) {
     n += Math.floor(Math.random() * 10);
   }
-  
+
   // Adicionar filial padrão 0001
   n += '0001';
-  
+
   // Calcular primeiro dígito verificador
   let soma = 0;
   let peso = 2;
@@ -90,11 +90,11 @@ export function generateValidCNPJ(): string {
     peso++;
     if (peso === 10) peso = 2;
   }
-  
+
   let dv1 = soma % 11;
   dv1 = dv1 < 2 ? 0 : 11 - dv1;
   n += dv1;
-  
+
   // Calcular segundo dígito verificador
   soma = 0;
   peso = 2;
@@ -103,16 +103,16 @@ export function generateValidCNPJ(): string {
     peso++;
     if (peso === 10) peso = 2;
   }
-  
+
   let dv2 = soma % 11;
   dv2 = dv2 < 2 ? 0 : 11 - dv2;
   n += dv2;
-  
+
   // Verificar se não é sequência inválida
   if (/^(\d)\1{13}$/.test(n)) {
     return generateValidCNPJ();
   }
-  
+
   return n;
 }
 
@@ -123,32 +123,32 @@ export function generateValidCPF(): string {
   for (let i = 0; i < 9; i++) {
     n += Math.floor(Math.random() * 10);
   }
-  
+
   // Calcular primeiro dígito verificador
   let soma = 0;
   for (let i = 0; i < 9; i++) {
     soma += parseInt(n.charAt(i)) * (10 - i);
   }
-  
+
   let resto = soma % 11;
   const dv1 = resto < 2 ? 0 : 11 - resto;
   n += dv1;
-  
+
   // Calcular segundo dígito verificador
   soma = 0;
   for (let i = 0; i < 10; i++) {
     soma += parseInt(n.charAt(i)) * (11 - i);
   }
-  
+
   resto = soma % 11;
   const dv2 = resto < 2 ? 0 : 11 - resto;
   n += dv2;
-  
+
   // Verificar se não é sequência inválida
   if (/^(\d)\1{10}$/.test(n)) {
     return generateValidCPF();
   }
-  
+
   return n;
 }
 
@@ -164,24 +164,24 @@ export function generateInscricaoMunicipal(): string {
 // Gerar razão social para empresa
 export function generateRazaoSocial(): string {
   const prefixos = [
-    'Empresa', 'Consultoria', 'Serviços', 'Tecnologia', 'Sistemas', 
+    'Empresa', 'Consultoria', 'Serviços', 'Tecnologia', 'Sistemas',
     'Inovação', 'Soluções', 'Desenvolvimento', 'Digital', 'Smart'
   ];
-  
+
   const nomes = [
-    'Alpha', 'Beta', 'Gamma', 'Delta', 'Omega', 'Prime', 'Nova', 
+    'Alpha', 'Beta', 'Gamma', 'Delta', 'Omega', 'Prime', 'Nova',
     'Ultra', 'Mega', 'Super', 'Advanced', 'Professional', 'Premium',
     'Excellence', 'Quality', 'Success', 'Future', 'Dynamic', 'Global'
   ];
-  
+
   const sufixos = [
     'Ltda', 'S/A', 'ME', 'EPP', 'EIRELI'
   ];
-  
+
   const prefixo = prefixos[Math.floor(Math.random() * prefixos.length)];
   const nome = nomes[Math.floor(Math.random() * nomes.length)];
   const sufixo = sufixos[Math.floor(Math.random() * sufixos.length)];
-  
+
   return `${prefixo} ${nome} ${sufixo}`;
 }
 
@@ -192,7 +192,7 @@ export function generateNomeFantasia(): string {
     'InnovateTech', 'SmartSys', 'DigitalPro', 'WebMaster', 'SoftwareHub',
     'TechVision', 'DataFlow', 'CloudSync', 'DevStudio', 'CodeWorks'
   ];
-  
+
   return nomes[Math.floor(Math.random() * nomes.length)];
 }
 
@@ -203,17 +203,17 @@ export function generateNomeCompleto(): string {
     'Paulo', 'Sandra', 'Francisco', 'Regina', 'Marcos', 'Fernanda', 'Pedro',
     'Juliana', 'Ricardo', 'Patricia', 'Roberto', 'Monica', 'Fernando', 'Carla'
   ];
-  
+
   const sobrenomes = [
     'Silva', 'Santos', 'Oliveira', 'Souza', 'Lima', 'Pereira', 'Costa', 'Rodrigues',
     'Martins', 'Jesus', 'Barbosa', 'Ribeiro', 'Nascimento', 'Araújo', 'Fernandes',
     'Carvalho', 'Gomes', 'Cardoso', 'Rocha', 'Mendes', 'Almeida', 'Monteiro'
   ];
-  
+
   const primeiroNome = primeirosNomes[Math.floor(Math.random() * primeirosNomes.length)];
   const sobrenome1 = sobrenomes[Math.floor(Math.random() * sobrenomes.length)];
   const sobrenome2 = sobrenomes[Math.floor(Math.random() * sobrenomes.length)];
-  
+
   return `${primeiroNome} ${sobrenome1} ${sobrenome2}`;
 }
 
@@ -239,16 +239,16 @@ export function generateTestDataPF() {
 // Função de teste para validar os geradores
 export function testGenerators() {
   console.log('=== Testando Geradores ===');
-  
+
   // Testar CNPJ
   for (let i = 0; i < 5; i++) {
     const cnpj = generateValidCNPJ();
     const isValid = validateCNPJ(cnpj);
     console.log(`CNPJ ${i + 1}: ${cnpj} - ${isValid ? 'VÁLIDO' : 'INVÁLIDO'}`);
   }
-  
+
   console.log('');
-  
+
   // Testar CPF
   for (let i = 0; i < 5; i++) {
     const cpf = generateValidCPF();
