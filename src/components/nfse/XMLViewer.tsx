@@ -6,8 +6,25 @@ interface XMLViewerProps {
   xml: string;
 }
 
+interface APIResponse {
+  lote: Array<{
+    chaveAcesso: string;
+    nsu: string | null;
+    statusProcessamento: string;
+    alertas: string | null;
+    erros: string | null;
+  }>;
+  tipoAmbiente: string;
+  versaoAplicativo: string;
+  dataHoraProcessamento: string;
+}
+
 export default function XMLViewer({ xml }: XMLViewerProps) {
   const [copied, setCopied] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState<{ success: boolean; message: string; apiData?: APIResponse } | null>(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [currentApiData, setCurrentApiData] = useState<APIResponse | null>(null);
 
   const handleCopy = async () => {
     try {
@@ -31,15 +48,118 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     URL.revokeObjectURL(url);
   };
 
+  const handleSendToAPI = async () => {
+    if (!xml.trim()) {
+      setSendResult({ success: false, message: 'Nenhum XML disponível para envio' });
+      return;
+    }
+
+    setSending(true);
+    setSendResult(null);
+
+    try {
+      const response = await fetch('https://nfsesigningapi-a9bsh7ftapacb2hv.brazilsouth-01.azurewebsites.net/api/NFSe/sign-and-send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        body: JSON.stringify({
+          xmlContent: xml
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro na API: ${response.status} - ${errorText}`);
+      }
+
+      const result: APIResponse = await response.json();
+      setCurrentApiData(result);
+
+      const chaveAcesso = result.lote[0]?.chaveAcesso || 'N/A';
+      setSendResult({
+        success: true,
+        message: `XML processado com sucesso!\nChave de Acesso: ${chaveAcesso}\nStatus: ${result.lote[0]?.statusProcessamento || 'N/A'}`,
+        apiData: result
+      });
+
+      console.log('Resposta da API:', result);
+    } catch (error) {
+      console.error('Erro ao enviar XML:', error);
+
+      let errorMessage = 'Erro desconhecido ao enviar XML';
+
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Erro de conexão: Verifique se a API está rodando em http://localhost:5066 e se o serviço está ativo. Pode ser um problema de CORS - a API precisa permitir requisições do domínio atual.';
+        } else if (error.message.includes('NetworkError')) {
+          errorMessage = 'Erro de rede: Não foi possível conectar com a API. Verifique se o serviço está ativo.';
+        } else if (error.message.includes('CORS')) {
+          errorMessage = 'Erro CORS: A API precisa permitir requisições do domínio atual.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setSendResult({
+        success: false,
+        message: errorMessage
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleSaveTest = async (testName: string) => {
+    if (!currentApiData || !testName.trim()) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/save-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nome: testName.trim(),
+          dataTeste: new Date().toISOString(),
+          chaveAcesso: currentApiData.lote[0]?.chaveAcesso || '',
+          xml: xml
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao salvar teste');
+      }
+
+      setSendResult({
+        success: true,
+        message: `Teste "${testName}" salvo com sucesso!`,
+        apiData: currentApiData
+      });
+
+      setShowSaveModal(false);
+    } catch (error) {
+      console.error('Erro ao salvar teste:', error);
+      setSendResult({
+        success: false,
+        message: 'Erro ao salvar teste. Tente novamente.'
+      });
+    }
+  };
+
   const formatXML = (xmlString: string): string => {
     if (!xmlString) return '';
-    
+
     try {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
       const serializer = new XMLSerializer();
       const formatted = serializer.serializeToString(xmlDoc);
-      
+
       // Adiciona quebras de linha e indentação
       return formatted
         .replace(/></g, '>\n<')
@@ -57,15 +177,15 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
 
   const highlightXML = (xmlString: string): string => {
     if (!xmlString) return '';
-    
+
     return xmlString
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/(&lt;\/?[^&\s]*&gt;)/g, '<span class="text-blue-600 font-semibold">$1</span>')
-      .replace(/(&lt;[^&]*\s)([^=\s&]*)(=)(&quot;[^&quot;]*&quot;)([^&]*&gt;)/g, 
+      .replace(/(&lt;[^&]*\s)([^=\s&]*)(=)(&quot;[^&quot;]*&quot;)([^&]*&gt;)/g,
         '$1<span class="text-green-600">$2</span><span class="text-gray-500">$3</span><span class="text-red-600">$4</span>$5')
-      .replace(/(&lt;[^&]*&gt;)([^&]*)(&lt;\/[^&]*&gt;)/g, 
+      .replace(/(&lt;[^&]*&gt;)([^&]*)(&lt;\/[^&]*&gt;)/g,
         '$1<span class="text-gray-800">$2</span>$3');
   };
 
@@ -74,7 +194,7 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
       <div className="text-center py-12">
         <div className="text-gray-400 mb-4">
           <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
         </div>
@@ -96,7 +216,7 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
             className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
             {copied ? 'Copiado!' : 'Copiar'}
@@ -106,30 +226,92 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
             className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Download
+          </button>
+          <button
+            onClick={handleSendToAPI}
+            disabled={sending}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {sending ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            )}
+            {sending ? 'Enviando...' : 'Enviar para API'}
           </button>
         </div>
       </div>
 
       <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
         <pre className="text-sm">
-          <code 
+          <code
             className="text-gray-100"
-            dangerouslySetInnerHTML={{ 
-              __html: highlightXML(formatXML(xml)) 
+            dangerouslySetInnerHTML={{
+              __html: highlightXML(formatXML(xml))
             }}
           />
         </pre>
       </div>
 
+      {sendResult && (
+        <div className={`border rounded-md p-4 ${sendResult.success
+          ? 'bg-green-50 border-green-200'
+          : 'bg-red-50 border-red-200'
+          }`}>
+          <div className="flex items-start">
+            <svg className={`w-5 h-5 mt-0.5 mr-2 ${sendResult.success ? 'text-green-400' : 'text-red-400'
+              }`} fill="currentColor" viewBox="0 0 20 20">
+              {sendResult.success ? (
+                <path fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd" />
+              ) : (
+                <path fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd" />
+              )}
+            </svg>
+            <div className="flex-1">
+              <h4 className={`text-sm font-medium ${sendResult.success ? 'text-green-800' : 'text-red-800'
+                }`}>
+                {sendResult.success ? 'Sucesso!' : 'Erro no Envio'}
+              </h4>
+              <div className={`text-sm mt-1 ${sendResult.success ? 'text-green-700' : 'text-red-700'
+                }`}>
+                <pre className="whitespace-pre-wrap">{sendResult.message}</pre>
+                {sendResult.success && sendResult.apiData && (
+                  <button
+                    onClick={() => setShowSaveModal(true)}
+                    className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Salvar Teste
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-green-50 border border-green-200 rounded-md p-4">
         <div className="flex items-start">
           <svg className="w-5 h-5 text-green-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" 
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
+            <path fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
               clipRule="evenodd" />
           </svg>
           <div>
@@ -146,8 +328,8 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
       <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
         <div className="flex items-start">
           <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" 
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" 
+            <path fillRule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
               clipRule="evenodd" />
           </svg>
           <div>
@@ -160,6 +342,55 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
           </div>
         </div>
       </div>
+
+      {/* Modal para salvar teste */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Salvar Teste
+              </h3>
+              <div className="mb-4">
+                <label htmlFor="testName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Nome do Teste
+                </label>
+                <input
+                  type="text"
+                  id="testName"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Digite o nome do teste..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const input = e.target as HTMLInputElement;
+                      handleSaveTest(input.value);
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => setShowSaveModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    const input = document.getElementById('testName') as HTMLInputElement;
+                    if (input) {
+                      handleSaveTest(input.value);
+                    }
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Salvar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
