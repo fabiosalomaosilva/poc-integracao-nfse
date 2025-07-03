@@ -42,7 +42,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             placeholder="Ex: DPS001"
             help="Identificador único da DPS"
           />
-          
+
           <InputField
             label="Série"
             name="serie"
@@ -52,7 +52,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             help="Série da DPS (5 dígitos)"
             maxLength={5}
           />
-          
+
           <FocusStableNumeric
             label="Número da DPS"
             name="nDPS"
@@ -80,7 +80,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             required
             help="Ambiente de emissão da DPS"
           />
-          
+
           <SelectField
             label="Tipo de Emitente"
             name="tpEmit"
@@ -90,7 +90,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             required
             help="Quem está emitindo a DPS"
           />
-          
+
           <InputField
             label="Versão da Aplicação"
             name="verAplic"
@@ -117,7 +117,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             required
             help="Data e hora de emissão (GMT-3)"
           />
-          
+
           <InputField
             label="Data de Competência"
             name="dCompet"
@@ -127,7 +127,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
             required
             help="Data de competência do serviço (YYYY-MM-DD)"
           />
-          
+
           <MunicipioAutocompleteField
             label="Código do Local de Emissão"
             name="cLocEmi"
@@ -156,7 +156,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
               help="Chave de 40 dígitos da NFSe substituída"
               maxLength={40}
             />
-            
+
             <InputField
               label="Código do Motivo"
               name="cMotivo"
@@ -166,7 +166,7 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
               help="Código do motivo da substituição"
               maxLength={2}
             />
-            
+
             <div className="md:col-span-2">
               <InputField
                 label="Descrição do Motivo"
@@ -198,28 +198,6 @@ export default function DadosGeraisForm({ data, onChange }: DadosGeraisFormProps
           </button>
         </div>
       )}
-
-      {/* Informações complementares */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">Informações importantes</h3>
-            <div className="text-sm text-blue-700 mt-1">
-              <ul className="list-disc list-inside space-y-1">
-                <li>Use ambiente de Homologação para testes</li>
-                <li>O código do local de emissão deve ser válido conforme tabela IBGE</li>
-                <li>A data de competência determina o mês de apuração do ISS</li>
-                <li>Quando Tipo de Emitente = &quot;Intermediário&quot;, a aba Intermediário será habilitada</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

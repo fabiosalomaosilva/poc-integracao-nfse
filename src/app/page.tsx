@@ -9,17 +9,17 @@ export default function Home() {
   const [activeView, setActiveView] = useState<'form' | 'xml'>('form');
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* Page Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                NFSe Nacional
+              <h1 className="text-2xl font-bold text-gray-900">
+                Gerador de NFSe
               </h1>
-              <p className="text-sm text-gray-500">
-                Declaração de Prestação de Serviços Eletrônica
+              <p className="text-gray-600 mt-1">
+                Preencha os dados e gere o XML da Nota Fiscal de Serviço Eletrônica
               </p>
             </div>
             
@@ -49,7 +49,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">

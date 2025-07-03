@@ -378,30 +378,6 @@ export default function TomadorForm({ data, onChange }: TomadorFormProps) {
         </div>
       </FieldGroup>
 
-      {/* Informações contextuais */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">Informações sobre o tomador</h3>
-            <div className="text-sm text-blue-700 mt-1">
-              <ul className="list-disc list-inside space-y-1">
-                <li><strong>Pessoa Física:</strong> Use CPF e nome completo</li>
-                <li><strong>Pessoa Jurídica:</strong> Use CNPJ e razão social</li>
-                <li><strong>Exterior:</strong> Use NIF (se possuir) ou informe o código do país</li>
-                <li><strong>CAEPF:</strong> Para pessoas físicas com atividade econômica cadastrada</li>
-                <li>Endereço nacional é obrigatório para tomadores brasileiros</li>
-                <li>Para exterior, o código do país deve seguir ISO 3166-1 alpha-3</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Alertas específicos */}
       {!data.xNome && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">

@@ -1,0 +1,76 @@
+export interface XmlSigningRequest {
+  xmlContent: string;
+}
+
+export interface XmlSigningResponse {
+  lote: LoteProcessamento[];
+  tipoAmbiente: string;
+  versaoAplicativo: string;
+  dataHoraProcessamento: string;
+}
+
+export interface LoteProcessamento {
+  chaveAcesso: string;
+  nsu: string | null;
+  statusProcessamento: string;
+  alertas: string | null;
+  erros: string | null;
+}
+
+export interface Nfse {
+  id: string;
+  chaveAcesso: string;
+  cadastroNacional: string;
+  dataProcessamento: string;
+  statusProcessamento: string;
+  xmlContent: string;
+  alertas?: string;
+  erros?: string;
+  nsu?: string;
+  tipoAmbiente: string;
+  versaoAplicativo: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface NfseListResponse {
+  nfses: Nfse[];
+  totalCount: number;
+}
+
+export interface PeriodoRequest {
+  dataInicio: string;
+  dataFim: string;
+  cadastroNacional?: string;
+}
+
+export interface ApiErrorResponse {
+  error: string;
+  message: string;
+  details?: any;
+}
+
+export interface TesteRequest {
+  nome: string;
+  dataTeste: string;
+  chaveAcesso: string;
+  xml: string;
+}
+
+export interface TesteResponse {
+  id: number; // API returns number, not string
+  nome: string;
+  dataTeste: string;
+  chaveAcesso: string;
+  xml: string;
+  createdAt: string;
+  updatedAt?: string;
+}

@@ -1,31 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import httpClient from '@/lib/http-client';
+import { XmlSigningResponse } from '@/types/nfse-api';
+import nfseApiService from '@/services/nfse-api';
 
 interface XMLViewerProps {
   xml: string;
 }
 
-interface APIResponse {
-  lote: Array<{
-    chaveAcesso: string;
-    nsu: string | null;
-    statusProcessamento: string;
-    alertas: string | null;
-    erros: string | null;
-  }>;
-  tipoAmbiente: string;
-  versaoAplicativo: string;
-  dataHoraProcessamento: string;
-}
-
 export default function XMLViewer({ xml }: XMLViewerProps) {
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
-  const [sendResult, setSendResult] = useState<{ success: boolean; message: string; apiData?: APIResponse } | null>(null);
+  const [sendResult, setSendResult] = useState<{ success: boolean; message: string; apiData?: XmlSigningResponse } | null>(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [currentApiData, setCurrentApiData] = useState<APIResponse | null>(null);
+  const [currentApiData, setCurrentApiData] = useState<XmlSigningResponse | null>(null);
 
   const handleCopy = async () => {
     try {
@@ -58,12 +46,8 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     setSending(true);
     setSendResult(null);
 
-    const urlBase = process.env.NEXT_PUBLIC_API_URL || ''
-    console.log(urlBase)
     try {
-      const result: APIResponse = await httpClient.post(`${urlBase}/api/NFSe/sign-and-send`, {
-        xmlContent: xml
-      });
+      const result: XmlSigningResponse = await nfseApiService.signAndSendXml(xml);
 
       setCurrentApiData(result);
 
@@ -109,35 +93,40 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     }
 
     try {
-      const response = await fetch('/api/save-test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nome: testName.trim(),
-          dataTeste: new Date().toISOString(),
-          chaveAcesso: currentApiData.lote[0]?.chaveAcesso || '',
-          xml: xml
-        })
-      });
+      const testeData = {
+        nome: testName.trim(),
+        dataTeste: new Date().toISOString(),
+        chaveAcesso: currentApiData.lote[0]?.chaveAcesso || '',
+        xml: xml
+      };
 
-      if (!response.ok) {
-        throw new Error('Erro ao salvar teste');
-      }
+      const savedTest = await nfseApiService.createTeste(testeData);
 
       setSendResult({
         success: true,
-        message: `Teste "${testName}" salvo com sucesso!`,
+        message: `Teste "${testName}" salvo com sucesso!\nID: ${savedTest.id}`,
         apiData: currentApiData
       });
 
       setShowSaveModal(false);
     } catch (error) {
       console.error('Erro ao salvar teste:', error);
+
+      let errorMessage = 'Erro ao salvar teste. Tente novamente.';
+
+      if (error instanceof Error) {
+        if (error.message.includes('401')) {
+          errorMessage = 'Erro de autenticação: Verifique se a API Key está configurada corretamente.';
+        } else if (error.message.includes('400')) {
+          errorMessage = 'Dados inválidos: Verifique se todos os campos estão preenchidos corretamente.';
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+        }
+      }
+
       setSendResult({
         success: false,
-        message: 'Erro ao salvar teste. Tente novamente.'
+        message: errorMessage
       });
     }
   };
@@ -298,42 +287,6 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         </div>
       )}
 
-      <div className="bg-green-50 border border-green-200 rounded-md p-4">
-        <div className="flex items-start">
-          <svg className="w-5 h-5 text-green-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd" />
-          </svg>
-          <div>
-            <h4 className="text-sm font-medium text-green-800">XML Gerado com Sucesso</h4>
-            <div className="text-sm text-green-700 mt-1">
-              <p>• Estrutura XML válida conforme schema NFSe v1.00</p>
-              <p>• Dados validados conforme regras de negócio</p>
-              <p>• Pronto para assinatura digital e envio</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-        <div className="flex items-start">
-          <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd"
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd" />
-          </svg>
-          <div>
-            <h4 className="text-sm font-medium text-yellow-800">Próximas Etapas</h4>
-            <div className="text-sm text-yellow-700 mt-1">
-              <p>1. Assinar digitalmente o XML com certificado A1/A3</p>
-              <p>2. Enviar para o webservice da Sefaz</p>
-              <p>3. Processar retorno e eventos</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Modal para salvar teste */}
       {showSaveModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -344,12 +297,12 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
               </h3>
               <div className="mb-4">
                 <label htmlFor="testName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Nome do Teste
+                  Nome do Teste Realizado
                 </label>
                 <input
                   type="text"
                   id="testName"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500 text-gray-700"
                   placeholder="Digite o nome do teste..."
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
