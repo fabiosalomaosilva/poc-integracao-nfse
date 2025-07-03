@@ -104,6 +104,7 @@ export class CompleteNFSeGenerator {
     // Gerar ID da NFSe automaticamente
     const idNFSe = gerarChaveAcessoNFSe({
       cnpj: data.infNFSe.emit.CNPJ,
+      cpf: data.infNFSe.emit.CPF,
       ambGer: data.infNFSe.ambGer,
       cLocIncid: data.infNFSe.cLocIncid || data.infNFSe.DPS.infDPS.cLocEmi,
       nNFSe: data.infNFSe.nNFSe || '1',
@@ -603,8 +604,19 @@ export class CompleteNFSeGenerator {
   private addEmitente(emit: any): void {
     this.xmlBuilder
       .addGroup('emit', undefined, (builder) => {
+        // Identificação (choice between CNPJ and CPF)
+        builder.addChoice([
+          {
+            condition: XMLUtils.isNotEmpty(emit.CNPJ),
+            callback: (b) => b.addElement('CNPJ', XMLUtils.formatCNPJCPF(emit.CNPJ))
+          },
+          {
+            condition: XMLUtils.isNotEmpty(emit.CPF),
+            callback: (b) => b.addElement('CPF', XMLUtils.formatCNPJCPF(emit.CPF))
+          }
+        ]);
+
         builder
-          .addElement('CNPJ', XMLUtils.formatCNPJCPF(emit.CNPJ))
           .addElement('IM', emit.IM)
           .addElement('xNome', XMLUtils.sanitizeText(emit.xNome))
           .addOptional('xFant', XMLUtils.sanitizeText(emit.xFant));

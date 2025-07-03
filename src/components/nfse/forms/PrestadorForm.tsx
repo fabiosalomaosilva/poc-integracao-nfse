@@ -121,30 +121,29 @@ export default function PrestadorForm({ data, onChange }: PrestadorFormProps) {
   const tipoIdentificacaoOptions = [
     { value: 'CNPJ', label: 'CNPJ' },
     { value: 'CPF', label: 'CPF' },
-    { value: 'NIF', label: 'NIF (Exterior)' },
-    { value: 'CAEPF', label: 'CAEPF' }
+    { value: 'NIF', label: 'NIF (Exterior)' }
   ];
 
   const opcaoSimplesNacionalOptions = [
-    { value: '1', label: 'Não Optante pelo Simples Nacional' },
-    { value: '2', label: 'MEI - Microempreendedor Individual' },
-    { value: '3', label: 'ME/EPP - Optante pelo Simples Nacional' }
+    { value: '1', label: 'Não Optante' },
+    { value: '2', label: 'Optante - Microempreendedor Individual (MEI)' },
+    { value: '3', label: 'Optante - Microempresa ou Empresa de Pequeno Porte (ME/EPP)' }
   ];
 
   const regimeApuracaoSNOptions = [
-    { value: '1', label: 'Caixa' },
-    { value: '2', label: 'Competência' },
-    { value: '3', label: 'Misto' }
+    { value: '1', label: 'Regime de apuração dos tributos federais e municipal pelo SN' },
+    { value: '2', label: 'Regime de apuração dos tributos federais pelo SN e o ISSQN pela NFS-e conforme respectiva legislação municipal do tributo' },
+    { value: '3', label: 'Regime de apuração dos tributos federais e municipal pela NFS-e conforme respectivas legilações federal e municipal de cada tributo' }
   ];
 
   const regimeEspecialOptions = [
     { value: '0', label: 'Nenhum' },
     { value: '1', label: 'Ato Cooperado' },
     { value: '2', label: 'Estimativa' },
-    { value: '3', label: 'Sociedade de Profissionais' },
-    { value: '4', label: 'Cooperativa' },
-    { value: '5', label: 'MEI' },
-    { value: '6', label: 'ME/EPP' }
+    { value: '3', label: 'Microempresa Municipal' },
+    { value: '4', label: 'Notário ou Registrador' },
+    { value: '5', label: 'Profissional Autônomo' },
+    { value: '6', label: 'Sociedade de Profissionais' }
   ];
 
   return (

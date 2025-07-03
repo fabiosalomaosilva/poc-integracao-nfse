@@ -211,16 +211,16 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
 
   // Callbacks estáveis para campos específicos para evitar perda de foco
   const handleNBMChange = useCallback((value: string) => {
-    updateDeepNestedField('trib', 'tribMun', 'BM', { 
-      ...safeData.trib.tribMun.BM, 
-      nBM: value 
+    updateDeepNestedField('trib', 'tribMun', 'BM', {
+      ...safeData.trib.tribMun.BM,
+      nBM: value
     });
   }, [updateDeepNestedField, safeData.trib.tribMun.BM]);
 
   const handleNProcessoChange = useCallback((value: string) => {
-    updateDeepNestedField('trib', 'tribMun', 'exigSusp', { 
-      ...safeData.trib.tribMun.exigSusp, 
-      nProcesso: value 
+    updateDeepNestedField('trib', 'tribMun', 'exigSusp', {
+      ...safeData.trib.tribMun.exigSusp,
+      nProcesso: value
     });
   }, [updateDeepNestedField, safeData.trib.tribMun.exigSusp]);
 
@@ -357,7 +357,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
             <p className="text-sm text-yellow-800">
-              <strong>Atenção:</strong> Use APENAS percentual OU valor, não ambos. 
+              <strong>Atenção:</strong> Use APENAS percentual OU valor, não ambos.
               O sistema também suporta dedução por documentos (não implementado nesta versão).
             </p>
           </div>
@@ -381,15 +381,15 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'tribISSQN', value)}
             required
             options={[
-              { value: '1', label: 'Tributável' },
-              { value: '2', label: 'Exportação de Serviços' },
-              { value: '3', label: 'Não Incidência' },
-              { value: '4', label: 'Imunidade' }
+              { value: '1', label: 'Operação tributável' },
+              { value: '2', label: 'Imunidade' },
+              { value: '3', label: 'Exportação de serviço' },
+              { value: '4', label: 'Não Incidência' }
             ]}
             help="Situação da tributação do ISSQN"
           />
 
-          {safeData.trib.tribMun.tribISSQN === '2' && (
+          {safeData.trib.tribMun.tribISSQN === '3' && (
             <InputField
               label="País de Resultado do Serviço"
               name="cPaisResult"
@@ -401,18 +401,19 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             />
           )}
 
-          {safeData.trib.tribMun.tribISSQN === '4' && (
+          {safeData.trib.tribMun.tribISSQN === '2' && (
             <SelectField
               label="Tipo de Imunidade"
               name="tpImunidade"
               value={safeData.trib.tribMun.tpImunidade || ''}
               onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'tpImunidade', value)}
               options={[
-                { value: '1', label: 'Patrimônio, renda ou serviços da União, Estados, DF e Municípios' },
-                { value: '2', label: 'Templos de qualquer culto' },
-                { value: '3', label: 'Patrimônio, renda ou serviços dos partidos políticos' },
-                { value: '4', label: 'Patrimônio, renda ou serviços das instituições de educação e assistência social' },
-                { value: '5', label: 'Livros, jornais, periódicos e papel destinado à sua impressão' }
+                { value: '0', label: 'Imunidade (tipo não informado na nota de origem)nidade' },
+                { value: '1', label: 'Patrimônio, renda ou serviços, uns dos outros (CF88, Art 150, VI, a)' },
+                { value: '2', label: 'Templos de qualquer culto (CF88, Art 150, VI, b)' },
+                { value: '3', label: 'Patrimônio, renda ou serviços dos partidos políticos, inclusive suas fundações, das entidades sindicais... (CF88, Art 150, VI, c)' },
+                { value: '4', label: 'Livros, jornais, periódicos e o papel destinado a sua impressão (CF88, Art 150, VI, d)' },
+                { value: '5', label: 'Fonogramas e videofonogramas musicais produzidos no Brasil contendo obras musicais ou literomusicais de autores brasileiros e/ou obras em geral interpretadas por artistas brasileiros... (CF88, Art 150, VI, e)' }
               ]}
               help="Tipo de imunidade aplicável"
             />
@@ -436,8 +437,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 value={safeData.trib.tribMun.tpRetISSQN}
                 onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'tpRetISSQN', value)}
                 options={[
-                  { value: '1', label: 'Sem retenção' },
-                  { value: '2', label: 'Com retenção' }
+                  { value: '1', label: 'Não Retido' },
+                  { value: '2', label: 'Retido pelo Tomador' },
+                  { value: '3', label: 'Retido pelo Intermediario' }
                 ]}
                 help="Indica se há retenção do ISSQN"
               />
@@ -493,9 +495,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 name="vRedBCBM"
                 value={safeData.trib.tribMun.BM.vRedBCBM}
                 onChange={(value) => {
-                  updateDeepNestedField('trib', 'tribMun', 'BM', { 
-                    ...safeData.trib.tribMun.BM, 
-                    vRedBCBM: value 
+                  updateDeepNestedField('trib', 'tribMun', 'BM', {
+                    ...safeData.trib.tribMun.BM,
+                    vRedBCBM: value
                   });
                 }}
                 min={0}
@@ -527,15 +529,14 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 label="Tipo de Suspensão"
                 name="tpSusp"
                 value={safeData.trib.tribMun.exigSusp.tpSusp}
-                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'exigSusp', { 
-                  ...safeData.trib.tribMun.exigSusp, 
-                  tpSusp: value 
+                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'exigSusp', {
+                  ...safeData.trib.tribMun.exigSusp,
+                  tpSusp: value
                 })}
                 required
                 options={[
-                  { value: '1', label: 'Decisão judicial' },
-                  { value: '2', label: 'Processo administrativo' },
-                  { value: '3', label: 'Legislação tributária' }
+                  { value: '1', label: 'Exigibilidade Suspensa por Decisão Judicial' },
+                  { value: '2', label: 'Exigibilidade Suspensa por Processo Administrativo' }
                 ]}
               />
 
@@ -589,20 +590,22 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     label="CST PIS/COFINS"
                     name="CST"
                     value={safeData.trib.tribFed!.piscofins!.CST}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...safeData.trib.tribFed!.piscofins, 
-                      CST: value 
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+                      ...safeData.trib.tribFed!.piscofins,
+                      CST: value
                     })}
                     required
                     options={[
-                      { value: '00', label: '00 - Operação Tributável' },
-                      { value: '01', label: '01 - Operação Tributável com Alíquota Diferenciada' },
-                      { value: '02', label: '02 - Operação Tributável sem Incidência da Contribuição' },
-                      { value: '03', label: '03 - Operação Tributável com Suspensão da Contribuição' },
-                      { value: '04', label: '04 - Operação Tributável com Alíquota Zero' },
-                      { value: '05', label: '05 - Operação Tributável com Isenção da Contribuição' },
-                      { value: '49', label: '49 - Outras Operações de Saída' },
-                      { value: '99', label: '99 - Outras Operações' }
+                      { value: '00', label: '00 - Nenhum' },
+                      { value: '01', label: '01 - Operação Tributável com Alíquota Básica' },
+                      { value: '02', label: '02 - Operação Tributável com Alíquota Diferenciada' },
+                      { value: '03', label: '03 - Operação Tributável com Alíquota por Unidade de Medida de Produto' },
+                      { value: '04', label: '04 - Operação Tributável monofásica - Revenda a Alíquota Zero' },
+                      { value: '05', label: '05 - Operação Tributável por Substituição Tributária' },
+                      { value: '06', label: '06 - Operação Tributável a Alíquota Zero' },
+                      { value: '07', label: '07 - Operação Tributável da Contribuição' },
+                      { value: '08', label: '08 - Operação sem Incidência da Contribuição' },
+                      { value: '09', label: '09 - Operação com Suspensão da Contribuição' },
                     ]}
                   />
 
@@ -610,9 +613,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     label="Base de Cálculo PIS/COFINS"
                     name="vBCPisCofins"
                     value={safeData.trib.tribFed!.piscofins!.vBCPisCofins}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...safeData.trib.tribFed!.piscofins!, 
-                      vBCPisCofins: value 
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+                      ...safeData.trib.tribFed!.piscofins!,
+                      vBCPisCofins: value
                     })}
                     min={0}
                     help="Base de cálculo para PIS/COFINS"
@@ -622,9 +625,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     label="Alíquota PIS (%)"
                     name="pAliqPis"
                     value={safeData.trib.tribFed!.piscofins!.pAliqPis}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...safeData.trib.tribFed!.piscofins!, 
-                      pAliqPis: value 
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+                      ...safeData.trib.tribFed!.piscofins!,
+                      pAliqPis: value
                     })}
                     min={0}
                     help="Alíquota do PIS"
@@ -634,9 +637,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     label="Alíquota COFINS (%)"
                     name="pAliqCofins"
                     value={safeData.trib.tribFed!.piscofins!.pAliqCofins}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...safeData.trib.tribFed!.piscofins!, 
-                      pAliqCofins: value 
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+                      ...safeData.trib.tribFed!.piscofins!,
+                      pAliqCofins: value
                     })}
                     min={0}
                     help="Alíquota do COFINS"
@@ -646,9 +649,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     label="Valor PIS"
                     name="vPis"
                     value={safeData.trib.tribFed!.piscofins!.vPis}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...safeData.trib.tribFed!.piscofins!, 
-                      vPis: value || 0 
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+                      ...safeData.trib.tribFed!.piscofins!,
+                      vPis: value || 0
                     })}
                     min={0}
                     help="Valor calculado do PIS"
@@ -658,9 +661,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     label="Valor COFINS"
                     name="vCofins"
                     value={safeData.trib.tribFed!.piscofins!.vCofins}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...safeData.trib.tribFed!.piscofins!, 
-                      vCofins: value || 0 
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+                      ...safeData.trib.tribFed!.piscofins!,
+                      vCofins: value || 0
                     })}
                     min={0}
                     help="Valor calculado do COFINS"
@@ -670,12 +673,12 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                     label="Retenção PIS/COFINS"
                     name="tpRetPisCofins"
                     value={safeData.trib.tribFed!.piscofins!.tpRetPisCofins || '2'}
-                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
-                      ...safeData.trib.tribFed!.piscofins!, 
-                      tpRetPisCofins: value 
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+                      ...safeData.trib.tribFed!.piscofins!,
+                      tpRetPisCofins: value
                     })}
                     options={[
-                      { value: '1', label: 'Retido na fonte' },
+                      { value: '1', label: 'Retido' },
                       { value: '2', label: 'Não retido' }
                     ]}
                     help="Indica se há retenção na fonte"
@@ -695,9 +698,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 label="Valor Retido Contribuição Previdenciária"
                 name="vRetCP"
                 value={safeData.trib.tribFed!.vRetCP}
-                onChange={(value) => updateNestedField('trib', 'tribFed', { 
-                  ...safeData.trib.tribFed!, 
-                  vRetCP: value || 0 
+                onChange={(value) => updateNestedField('trib', 'tribFed', {
+                  ...safeData.trib.tribFed!,
+                  vRetCP: value || 0
                 })}
                 min={0}
                 help="INSS retido na fonte"
@@ -707,9 +710,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 label="Valor Retido IRRF"
                 name="vRetIRRF"
                 value={safeData.trib.tribFed!.vRetIRRF}
-                onChange={(value) => updateNestedField('trib', 'tribFed', { 
-                  ...safeData.trib.tribFed!, 
-                  vRetIRRF: value || 0 
+                onChange={(value) => updateNestedField('trib', 'tribFed', {
+                  ...safeData.trib.tribFed!,
+                  vRetIRRF: value || 0
                 })}
                 min={0}
                 help="Imposto de Renda retido na fonte"
@@ -719,9 +722,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 label="Valor Retido CSLL"
                 name="vRetCSLL"
                 value={safeData.trib.tribFed!.vRetCSLL}
-                onChange={(value) => updateNestedField('trib', 'tribFed', { 
-                  ...safeData.trib.tribFed!, 
-                  vRetCSLL: value || 0 
+                onChange={(value) => updateNestedField('trib', 'tribFed', {
+                  ...safeData.trib.tribFed!,
+                  vRetCSLL: value || 0
                 })}
                 min={0}
                 help="Contribuição Social sobre Lucro Líquido retida"
@@ -755,9 +758,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 label="Total Tributos Federais"
                 name="vTotTribFed"
                 value={safeData.trib.totTrib!.vTotTrib!.vTotTribFed}
-                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                  ...safeData.trib.totTrib!.vTotTrib!, 
-                  vTotTribFed: value || 0 
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', {
+                  ...safeData.trib.totTrib!.vTotTrib!,
+                  vTotTribFed: value || 0
                 })}
                 min={0}
                 help="Soma de todos os tributos federais"
@@ -767,9 +770,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 label="Total Tributos Estaduais"
                 name="vTotTribEst"
                 value={safeData.trib.totTrib!.vTotTrib!.vTotTribEst}
-                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                  ...safeData.trib.totTrib!.vTotTrib!, 
-                  vTotTribEst: value || 0 
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', {
+                  ...safeData.trib.totTrib!.vTotTrib!,
+                  vTotTribEst: value || 0
                 })}
                 min={0}
                 help="Soma de todos os tributos estaduais"
@@ -779,9 +782,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                 label="Total Tributos Municipais"
                 name="vTotTribMun"
                 value={safeData.trib.totTrib!.vTotTrib!.vTotTribMun}
-                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
-                  ...safeData.trib.totTrib!.vTotTrib!, 
-                  vTotTribMun: value || 0 
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', {
+                  ...safeData.trib.totTrib!.vTotTrib!,
+                  vTotTribMun: value || 0
                 })}
                 min={0}
                 help="Soma de todos os tributos municipais (ISSQN)"
@@ -831,8 +834,8 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
       <div className="border border-gray-200 rounded-md p-4">
         <h3 className="text-sm font-medium text-gray-900 mb-2">Valores e Tributação</h3>
         <p className="text-sm text-gray-600">
-          Configure aqui todos os valores e tributos relacionados ao serviço. O sistema pode 
-          calcular automaticamente a base de cálculo, ISS e valor líquido baseado nos valores 
+          Configure aqui todos os valores e tributos relacionados ao serviço. O sistema pode
+          calcular automaticamente a base de cálculo, ISS e valor líquido baseado nos valores
           informados. Use as seções opcionais apenas quando aplicáveis.
         </p>
       </div>

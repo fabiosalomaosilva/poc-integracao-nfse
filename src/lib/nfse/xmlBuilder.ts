@@ -246,9 +246,9 @@ export class XMLUtils {
       return '';
     }
     
-    // Validar comprimento básico (11 para CPF, 14 para CNPJ)
-    if (clean.length !== 11 && clean.length !== 14 && clean.length > 0) {
-      console.warn('Invalid CNPJ/CPF length:', clean);
+    // Para DPS, CPF pode vir padded para 14 dígitos, então aceitar comprimentos válidos
+    if (clean.length > 0 && clean.length !== 11 && clean.length !== 14) {
+      console.warn('Invalid CNPJ/CPF length:', clean, 'length:', clean.length);
     }
     
     return clean;

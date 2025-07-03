@@ -93,12 +93,25 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     }
 
     try {
+      // Extrair chave de acesso do XML caso não esteja na resposta da API
+      let chaveAcesso = currentApiData.lote[0]?.chaveAcesso || '';
+
+      if (!chaveAcesso && xml) {
+        // Tentar extrair do atributo Id do XML
+        const idMatch = xml.match(/Id="([^"]+)"/);
+        if (idMatch) {
+          chaveAcesso = idMatch[1];
+        }
+      }
+
       const testeData = {
         nome: testName.trim(),
         dataTeste: new Date().toISOString(),
-        chaveAcesso: currentApiData.lote[0]?.chaveAcesso || '',
+        chaveAcesso: chaveAcesso,
         xml: xml
       };
+
+      console.log('Dados do teste a serem salvos:', testeData);
 
       const savedTest = await nfseApiService.createTeste(testeData);
 
@@ -118,9 +131,11 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         if (error.message.includes('401')) {
           errorMessage = 'Erro de autenticação: Verifique se a API Key está configurada corretamente.';
         } else if (error.message.includes('400')) {
-          errorMessage = 'Dados inválidos: Verifique se todos os campos estão preenchidos corretamente.';
+          errorMessage = `Dados inválidos: ${error.message}. Verifique se a chave de acesso foi fornecida corretamente.`;
         } else if (error.message.includes('500')) {
           errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+        } else {
+          errorMessage = `Erro ao salvar teste: ${error.message}`;
         }
       }
 
@@ -135,39 +150,92 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     if (!xmlString) return '';
 
     try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
-      const serializer = new XMLSerializer();
-      const formatted = serializer.serializeToString(xmlDoc);
+      // Limpa o XML removendo espaços extras
+      let xml = xmlString.replace(/>\s+</g, '><').trim();
 
-      // Adiciona quebras de linha e indentação
-      return formatted
-        .replace(/></g, '>\n<')
-        .split('\n')
-        .map((line, index) => {
-          const depth = line.match(/^<\//) ? -1 : line.match(/^<[^\/][^>]*[^\/]>/) ? 0 : 0;
-          const indent = '  '.repeat(Math.max(0, index > 0 ? depth : 0));
-          return indent + line.trim();
-        })
-        .join('\n');
-    } catch {
+      // Quebra por tags
+      xml = xml.replace(/></g, '>\n<');
+
+      const lines = xml.split('\n');
+      const result: string[] = [];
+      let indentLevel = 0;
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+
+        // Verifica se é uma linha com tag completa (abertura e fechamento na mesma linha)
+        const hasCompleteTag = trimmedLine.match(/^<([^\/!?][^>]*)>.*<\/\1>$/);
+
+        // Se é tag de fechamento </xxx>, diminui indentação antes
+        if (trimmedLine.startsWith('</')) {
+          indentLevel = Math.max(0, indentLevel - 1);
+        }
+
+        // Aplica indentação
+        const indent = '  '.repeat(indentLevel);
+        result.push(indent + trimmedLine);
+
+        // Se é tag de abertura <xxx> (não self-closing e não declaração XML), aumenta indentação depois
+        // Mas se for uma tag completa na mesma linha, não aumenta indentação
+        if (trimmedLine.startsWith('<') &&
+          !trimmedLine.startsWith('</') &&
+          !trimmedLine.endsWith('/>') &&
+          !trimmedLine.startsWith('<?xml') &&
+          !trimmedLine.startsWith('<!--') &&
+          !hasCompleteTag) {
+          indentLevel++;
+        }
+      }
+
+      return result.join('\n');
+    } catch (error) {
+      console.warn('Erro ao formatar XML:', error);
       return xmlString;
     }
   };
 
   const highlightXML = (xmlString: string): string => {
-    if (!xmlString) return '';
-
     return xmlString
+      // 🔒 Escapa caracteres especiais para HTML seguro
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/(&lt;\/?[^&\s]*&gt;)/g, '<span class="text-blue-700 font-semibold">$1</span>')
-      .replace(/(&lt;[^&]*\s)([^=\s&]*)(=)(&quot;[^&quot;]*&quot;)([^&]*&gt;)/g,
-        '$1<span class="text-green-700">$2</span><span class="text-gray-600">$3</span><span class="text-red-700">$4</span>$5')
-      .replace(/(&lt;[^&]*&gt;)([^&]*)(&lt;\/[^&]*&gt;)/g,
-        '$1<span class="text-gray-900">$2</span>$3');
+      .replace(/"/g, '&quot;') // necessário para destacar atributos corretamente
+
+      // 🎨 Destaque: declaração XML (<?xml ... ?>)
+      .replace(
+        /(&lt;\?xml[^&]*\?&gt;)/g,
+        '<span class="text-indigo-600 font-semibold">$1</span>'
+      )
+
+      // 🎨 Destaque: tags de fechamento (</NFSe>)
+      .replace(
+        /(&lt;\/[^&\s]*&gt;)/g,
+        '<span class="text-blue-700 font-semibold">$1</span>'
+      )
+
+      // 🎨 Destaque: tags de abertura (<NFSe>)
+      .replace(
+        /(&lt;[^\/\?][^&\s]*(?:\s[^&]*)?&gt;)/g,
+        '<span class="text-blue-700 font-semibold">$1</span>'
+      )
+
+      // 🎨 Destaque: atributos (ex: Id="valor")
+      .replace(
+        /(\s)([a-zA-Z][a-zA-Z0-9\-_]*)(=)(&quot;[^&quot;]*&quot;)/g,
+        '$1<span class="text-blue-500">$2</span>' +   // nome do atributo (azul claro)
+        '<span class="text-gray-500">$3</span>' +     // sinal =
+        '<span class="text-gray-700">$4</span>'       // valor do atributo (cinza escuro)
+      )
+
+      // 🎨 Destaque: texto entre tags (ex: Regente Feijó)
+      .replace(
+        /(&gt;)([^&]+)(&lt;)/g,
+        '$1<span class="text-gray-800">$2</span>$3'
+      );
   };
+
 
   if (!xml) {
     return (
@@ -232,10 +300,14 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         </div>
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-96">
-        <pre className="text-sm">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-[600px]">
+        <pre className="text-sm font-mono leading-relaxed whitespace-pre">
           <code
-            className="text-gray-900"
+            className="text-gray-900 block"
+            style={{
+              fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+              lineHeight: '1.5'
+            }}
             dangerouslySetInnerHTML={{
               __html: highlightXML(formatXML(xml))
             }}
@@ -289,8 +361,8 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
 
       {/* Modal para salvar teste */}
       {showSaveModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600/40 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-35 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Salvar Teste

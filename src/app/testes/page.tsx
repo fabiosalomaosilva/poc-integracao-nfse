@@ -40,10 +40,17 @@ export default function TestesPage() {
   };
 
   const handleViewXml = (test: TesteResponse) => {
+    console.log('Visualizando XML do teste:', test);
+    console.log('XML Content:', test.xml);
     setSelectedTest(test);
   };
 
   const downloadXml = (test: TesteResponse) => {
+    if (!test.xml || test.xml.trim() === '') {
+      alert('Nenhum conteúdo XML disponível para download');
+      return;
+    }
+
     const blob = new Blob([test.xml], { type: 'application/xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -63,21 +70,47 @@ export default function TestesPage() {
     if (!xmlString) return '';
 
     try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
-      const serializer = new XMLSerializer();
-      const formatted = serializer.serializeToString(xmlDoc);
-
-      return formatted
-        .replace(/></g, '>\n<')
-        .split('\n')
-        .map((line, index) => {
-          const depth = line.match(/^<\//) ? -1 : line.match(/^<[^\/][^>]*[^\/]>/) ? 0 : 0;
-          const indent = '  '.repeat(Math.max(0, index > 0 ? depth : 0));
-          return indent + line.trim();
-        })
-        .join('\n');
-    } catch {
+      // Limpa o XML removendo espaços extras
+      let xml = xmlString.replace(/>\s+</g, '><').trim();
+      
+      // Quebra por tags
+      xml = xml.replace(/></g, '>\n<');
+      
+      const lines = xml.split('\n');
+      const result: string[] = [];
+      let indentLevel = 0;
+      
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+        
+        // Verifica se é uma linha com tag completa (abertura e fechamento na mesma linha)
+        const hasCompleteTag = trimmedLine.match(/^<([^\/!?][^>]*)>.*<\/\1>$/);
+        
+        // Se é tag de fechamento </xxx>, diminui indentação antes
+        if (trimmedLine.startsWith('</')) {
+          indentLevel = Math.max(0, indentLevel - 1);
+        }
+        
+        // Aplica indentação
+        const indent = '  '.repeat(indentLevel);
+        result.push(indent + trimmedLine);
+        
+        // Se é tag de abertura <xxx> (não self-closing e não declaração XML), aumenta indentação depois
+        // Mas se for uma tag completa na mesma linha, não aumenta indentação
+        if (trimmedLine.startsWith('<') && 
+            !trimmedLine.startsWith('</') && 
+            !trimmedLine.endsWith('/>') && 
+            !trimmedLine.startsWith('<?xml') &&
+            !trimmedLine.startsWith('<!--') &&
+            !hasCompleteTag) {
+          indentLevel++;
+        }
+      }
+      
+      return result.join('\n');
+    } catch (error) {
+      console.warn('Erro ao formatar XML:', error);
       return xmlString;
     }
   };
@@ -172,9 +205,6 @@ export default function TestesPage() {
                         Data do Teste
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Criado em
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
@@ -193,28 +223,35 @@ export default function TestesPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{formatDate(test.dataTeste)}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{formatDate(test.createdAt)}</div>
-                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleViewXml(test)}
-                              className="text-blue-600 hover:text-blue-900"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-colors"
+                              title="Visualizar XML"
                             >
-                              Ver XML
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
                             </button>
                             <button
                               onClick={() => downloadXml(test)}
-                              className="text-green-600 hover:text-green-900"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 transition-colors"
+                              title="Download XML"
                             >
-                              Download
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
                             </button>
                             <button
                               onClick={() => handleDeleteTest(test)}
-                              className="text-red-600 hover:text-red-900"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-colors"
+                              title="Excluir teste"
                             >
-                              Excluir
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
                             </button>
                           </div>
                         </td>
@@ -278,7 +315,7 @@ export default function TestesPage() {
 
       {/* XML Modal */}
       {selectedTest && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
@@ -294,7 +331,7 @@ export default function TestesPage() {
                   </svg>
                 </button>
               </div>
-              
+
               <div className="mb-4 grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Chave de Acesso:</span>
@@ -307,18 +344,23 @@ export default function TestesPage() {
               </div>
 
               <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-gray-900">XML Content:</h4>
                   <button
                     onClick={() => downloadXml(selectedTest)}
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-md transition-colors"
                   >
-                    Download XML
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download
                   </button>
                 </div>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
                   <pre className="text-sm text-gray-100 whitespace-pre-wrap">
-                    {formatXML(selectedTest.xml)}
+                    {selectedTest.xml ? formatXML(selectedTest.xml) : (
+                      <span className="text-gray-400 italic">Nenhum conteúdo XML disponível</span>
+                    )}
                   </pre>
                 </div>
               </div>
@@ -329,7 +371,7 @@ export default function TestesPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3 text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">

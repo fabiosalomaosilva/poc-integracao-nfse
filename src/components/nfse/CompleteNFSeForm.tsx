@@ -203,7 +203,8 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         dhProc: new Date().toISOString(),
         nDFSe: '1',
         emit: {
-          CNPJ: dpsData.infDPS.prest?.CNPJ || '0000000000000',
+          ...(dpsData.infDPS.prest?.CNPJ ? { CNPJ: dpsData.infDPS.prest.CNPJ } : {}),
+          ...(dpsData.infDPS.prest?.CPF ? { CPF: dpsData.infDPS.prest.CPF } : {}),
           IM: dpsData.infDPS.prest?.IM || '4292',
           xNome: dpsData.infDPS.prest?.xNome || 'Empresa de Teste 01',
           xFant: dpsData.infDPS.prest?.xFant || 'Empresa de Teste 01',
@@ -233,8 +234,6 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     };
   };
 
-  // Verificar se intermediário deve ser mostrado
-  const showIntermediario = formData.infDPS.tpEmit === '3';
 
   const tabs = [
     {
@@ -294,7 +293,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     {
       id: 'intermediario',
       label: 'Intermediário',
-      content: showIntermediario ? (
+      content: (
         <IntermediarioForm
           data={formData.infDPS.interm || {
             xNome: '',
@@ -307,13 +306,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
           }}
           onChange={(data) => updateFormData('interm', data)}
         />
-      ) : (
-        <div className="text-center py-8 text-gray-500">
-          <p>Intermediário aparece apenas quando Tipo de Emitente = &quot;Intermediário&quot;</p>
-          <p className="text-sm mt-2">Configure em Dados Gerais → Tipo de Emitente</p>
-        </div>
-      ),
-      disabled: !showIntermediario
+      )
     },
     {
       id: 'servicos',
