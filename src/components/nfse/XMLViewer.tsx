@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import httpClient from '@/lib/http-client';
 
 interface XMLViewerProps {
   xml: string;
@@ -60,24 +61,10 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     const urlBase = process.env.NEXT_PUBLIC_API_URL || ''
     console.log(urlBase)
     try {
-      const response = await fetch(`${urlBase}/api/NFSe/sign-and-send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        mode: 'cors',
-        body: JSON.stringify({
-          xmlContent: xml
-        })
+      const result: APIResponse = await httpClient.post(`${urlBase}/api/NFSe/sign-and-send`, {
+        xmlContent: xml
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erro na API: ${response.status} - ${errorText}`);
-      }
-
-      const result: APIResponse = await response.json();
       setCurrentApiData(result);
 
       const chaveAcesso = result.lote[0]?.chaveAcesso || 'N/A';
@@ -94,10 +81,12 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
       let errorMessage = 'Erro desconhecido ao enviar XML';
 
       if (error instanceof Error) {
-        if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Erro de conexão: Verifique se a API está rodando em http://localhost:5066 e se o serviço está ativo. Pode ser um problema de CORS - a API precisa permitir requisições do domínio atual.';
-        } else if (error.message.includes('NetworkError')) {
-          errorMessage = 'Erro de rede: Não foi possível conectar com a API. Verifique se o serviço está ativo.';
+        if (error.message.includes('Network Error') || error.message.includes('ECONNREFUSED')) {
+          errorMessage = 'Erro de conexão: Verifique se a API está rodando e se o serviço está ativo.';
+        } else if (error.message.includes('401')) {
+          errorMessage = 'Erro de autenticação: Verifique se a API Key está configurada corretamente.';
+        } else if (error.message.includes('403')) {
+          errorMessage = 'Erro de autorização: A API Key não tem permissão para acessar este recurso.';
         } else if (error.message.includes('CORS')) {
           errorMessage = 'Erro CORS: A API precisa permitir requisições do domínio atual.';
         } else {
