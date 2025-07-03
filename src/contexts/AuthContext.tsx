@@ -19,7 +19,7 @@ interface AuthProviderProps {
 }
 
 // Routes that don't require authentication
-const publicRoutes = ['/login'];
+//const publicRoutes = ['/login'];
 
 // Routes that require authentication
 const protectedRoutes = ['/', '/nfse', '/testes'];
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     // Handle route protection
     if (!isLoading) {
-      const isPublicRoute = publicRoutes.includes(pathname);
+      //const isPublicRoute = publicRoutes.includes(pathname);
       const isProtectedRoute = protectedRoutes.includes(pathname);
 
       if (!user && isProtectedRoute) {
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     try {
       const result = await authService.login({ email, password });
-      
+
       if (result.user && !result.error) {
         setUser(result.user);
         return { success: true };
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, error: result.error || 'Falha na autenticação' };
       }
     } catch (error) {
-      return { success: false, error: 'Erro inesperado durante o login' };
+      return { success: false, error: `Erro inesperado durante o login. Erro: ${error}` };
     }
   };
 

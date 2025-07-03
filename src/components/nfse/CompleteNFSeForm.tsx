@@ -13,7 +13,7 @@ import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
 import { loadXMLTemplate } from '../../utils/xmlTemplateParser';
 import { getCurrentBrazilDateTime } from '../../utils/dateTimeUtils';
 import XMLUploader from '../ui/XMLUploader';
-import { getSavedDataPreview } from '../../hooks/usePersistentState';
+//import { getSavedDataPreview } from '../../hooks/usePersistentState';
 
 interface CompleteNFSeFormProps {
   onXMLGenerated: (xml: string) => void;
@@ -350,7 +350,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
   }
 
   // Verificar se há dados salvos para mostrar aviso
-  const savedDataInfo = getSavedDataPreview();
+  //const savedDataInfo = getSavedDataPreview();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

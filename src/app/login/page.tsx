@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import authService, { LoginCredentials } from '@/services/auth-service';
-import Link from 'next/link';
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState<LoginCredentials>({
@@ -83,7 +82,7 @@ export default function LoginPage() {
         setError('Falha na autenticação');
       }
     } catch (error) {
-      setError('Erro inesperado. Tente novamente.');
+      setError('Erro inesperado. Tente novamente. ' + error);
     } finally {
       setIsLoading(false);
     }
