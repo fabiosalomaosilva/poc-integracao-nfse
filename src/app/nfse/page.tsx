@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import nfseApiService from '@/services/nfse-api';
-import { Nfse } from '@/types/nfse-api';
 
 export default function NFSePage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize] = useState(10);
 
   const { data: nfseData, isLoading, error, refetch } = useQuery({
     queryKey: ['nfse-paginated', currentPage, pageSize],
@@ -30,9 +29,9 @@ export default function NFSePage() {
     if (!value) return '-';
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(numValue)) return '-';
-    return new Intl.NumberFormat('pt-BR', { 
-      style: 'currency', 
-      currency: 'BRL' 
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
     }).format(numValue);
   };
 
