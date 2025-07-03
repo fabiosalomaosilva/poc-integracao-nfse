@@ -1,5 +1,5 @@
 import { supabaseAuth } from '@/lib/supabase-auth'
-import { User, AuthError } from '@supabase/supabase-js'
+import { AuthError } from '@supabase/supabase-js'
 
 export interface AuthUser {
   id: string
@@ -47,7 +47,7 @@ class AuthService {
         },
         error: null
       }
-    } catch (error) {
+    } catch {
       return {
         user: null,
         error: 'Erro inesperado durante o login'
@@ -58,13 +58,13 @@ class AuthService {
   async logout(): Promise<{ error: string | null }> {
     try {
       const { error } = await supabaseAuth.auth.signOut()
-      
+
       if (error) {
         return { error: this.getErrorMessage(error) }
       }
 
       return { error: null }
-    } catch (error) {
+    } catch {
       return { error: 'Erro inesperado durante o logout' }
     }
   }
@@ -72,7 +72,7 @@ class AuthService {
   async getCurrentUser(): Promise<AuthUser | null> {
     try {
       const { data: { user } } = await supabaseAuth.auth.getUser()
-      
+
       if (!user) {
         return null
       }
