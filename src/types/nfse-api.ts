@@ -18,6 +18,13 @@ export interface LoteProcessamento {
 }
 
 export interface Nfse {
+  vLiq: string | number | undefined;
+  vissqn: string | number | undefined;
+  pAliqAplic: string | number | undefined;
+  vbc: string | number | undefined;
+  vServ: string | number | undefined;
+  nomeEmitente: string;
+  cTribNac: string;
   id: string;
   chaveAcesso: string;
   cadastroNacional: string;
