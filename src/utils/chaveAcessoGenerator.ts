@@ -105,10 +105,21 @@ export function gerarChaveAcessoDPS(dados: {
 }): string {
   // Validar documento antes de gerar a chave
   const documentoParaValidar = dados.cnpj || dados.cpf || '';
-  const validacao = validarDocumento(documentoParaValidar);
   
-  if (!validacao.valido) {
-    throw new Error(`Não é possível gerar chave DPS: ${validacao.erro}`);
+  // Para DPS, validar o documento apenas se não estiver vazio
+  if (documentoParaValidar) {
+    const docLimpo = documentoParaValidar.replace(/\D/g, '');
+    
+    // Validação mais flexível para DPS: aceitar CPF (11) ou CNPJ (14) dígitos
+    if (dados.cnpj && docLimpo.length !== 14) {
+      throw new Error(`CNPJ inválido para DPS: deve ter 14 dígitos, fornecido: ${docLimpo.length} dígitos`);
+    }
+    
+    if (dados.cpf && docLimpo.length !== 11) {
+      throw new Error(`CPF inválido para DPS: deve ter 11 dígitos, fornecido: ${docLimpo.length} dígitos`);
+    }
+  } else {
+    throw new Error('CNPJ ou CPF deve ser fornecido para gerar chave DPS');
   }
 
   // Determinar tipo de inscrição federal
@@ -119,7 +130,9 @@ export function gerarChaveAcessoDPS(dados: {
   if (dados.cnpj) {
     documento = dados.cnpj.replace(/\D/g, '').padStart(14, '0');
   } else if (dados.cpf) {
-    documento = dados.cpf.replace(/\D/g, '').padStart(14, '0'); // CPF também vai para 14 dígitos no DPS
+    // CPF deve ser padded corretamente para 14 dígitos: 000 + CPF (11 dígitos)
+    const cpfLimpo = dados.cpf.replace(/\D/g, '');
+    documento = cpfLimpo.padStart(14, '0');
   } else {
     throw new Error("CNPJ ou CPF deve ser fornecido");
   }

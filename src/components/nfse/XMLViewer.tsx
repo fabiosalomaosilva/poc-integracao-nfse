@@ -93,12 +93,25 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
     }
 
     try {
+      // Extrair chave de acesso do XML caso não esteja na resposta da API
+      let chaveAcesso = currentApiData.lote[0]?.chaveAcesso || '';
+
+      if (!chaveAcesso && xml) {
+        // Tentar extrair do atributo Id do XML
+        const idMatch = xml.match(/Id="([^"]+)"/);
+        if (idMatch) {
+          chaveAcesso = idMatch[1];
+        }
+      }
+
       const testeData = {
         nome: testName.trim(),
         dataTeste: new Date().toISOString(),
-        chaveAcesso: currentApiData.lote[0]?.chaveAcesso || '',
+        chaveAcesso: chaveAcesso,
         xml: xml
       };
+
+      console.log('Dados do teste a serem salvos:', testeData);
 
       const savedTest = await nfseApiService.createTeste(testeData);
 
@@ -118,9 +131,11 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         if (error.message.includes('401')) {
           errorMessage = 'Erro de autenticação: Verifique se a API Key está configurada corretamente.';
         } else if (error.message.includes('400')) {
-          errorMessage = 'Dados inválidos: Verifique se todos os campos estão preenchidos corretamente.';
+          errorMessage = `Dados inválidos: ${error.message}. Verifique se a chave de acesso foi fornecida corretamente.`;
         } else if (error.message.includes('500')) {
           errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+        } else {
+          errorMessage = `Erro ao salvar teste: ${error.message}`;
         }
       }
 
@@ -346,8 +361,8 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
 
       {/* Modal para salvar teste */}
       {showSaveModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600/40 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-35 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Salvar Teste

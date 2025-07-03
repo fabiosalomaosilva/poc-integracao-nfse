@@ -304,7 +304,8 @@ export interface CompleteNFSeData {
 }
 
 export interface EmitenteDados {
-  CNPJ: string;
+  CNPJ?: string;
+  CPF?: string;
   IM: string;
   xNome: string;
   xFant?: string;

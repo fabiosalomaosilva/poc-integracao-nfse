@@ -203,7 +203,8 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         dhProc: new Date().toISOString(),
         nDFSe: '1',
         emit: {
-          CNPJ: dpsData.infDPS.prest?.CNPJ || '0000000000000',
+          ...(dpsData.infDPS.prest?.CNPJ ? { CNPJ: dpsData.infDPS.prest.CNPJ } : {}),
+          ...(dpsData.infDPS.prest?.CPF ? { CPF: dpsData.infDPS.prest.CPF } : {}),
           IM: dpsData.infDPS.prest?.IM || '4292',
           xNome: dpsData.infDPS.prest?.xNome || 'Empresa de Teste 01',
           xFant: dpsData.infDPS.prest?.xFant || 'Empresa de Teste 01',
