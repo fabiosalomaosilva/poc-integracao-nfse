@@ -162,11 +162,11 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/(&lt;\/?[^&\s]*&gt;)/g, '<span class="text-blue-600 font-semibold">$1</span>')
+      .replace(/(&lt;\/?[^&\s]*&gt;)/g, '<span class="text-blue-700 font-semibold">$1</span>')
       .replace(/(&lt;[^&]*\s)([^=\s&]*)(=)(&quot;[^&quot;]*&quot;)([^&]*&gt;)/g,
-        '$1<span class="text-green-600">$2</span><span class="text-gray-500">$3</span><span class="text-red-600">$4</span>$5')
+        '$1<span class="text-green-700">$2</span><span class="text-gray-600">$3</span><span class="text-red-700">$4</span>$5')
       .replace(/(&lt;[^&]*&gt;)([^&]*)(&lt;\/[^&]*&gt;)/g,
-        '$1<span class="text-gray-800">$2</span>$3');
+        '$1<span class="text-gray-900">$2</span>$3');
   };
 
   if (!xml) {
@@ -232,10 +232,10 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-96">
         <pre className="text-sm">
           <code
-            className="text-gray-100"
+            className="text-gray-900"
             dangerouslySetInnerHTML={{
               __html: highlightXML(formatXML(xml))
             }}
