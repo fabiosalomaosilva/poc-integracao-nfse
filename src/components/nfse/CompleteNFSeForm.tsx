@@ -233,8 +233,6 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     };
   };
 
-  // Verificar se intermediário deve ser mostrado
-  const showIntermediario = formData.infDPS.tpEmit === '3';
 
   const tabs = [
     {
@@ -294,7 +292,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     {
       id: 'intermediario',
       label: 'Intermediário',
-      content: showIntermediario ? (
+      content: (
         <IntermediarioForm
           data={formData.infDPS.interm || {
             xNome: '',
@@ -307,13 +305,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
           }}
           onChange={(data) => updateFormData('interm', data)}
         />
-      ) : (
-        <div className="text-center py-8 text-gray-500">
-          <p>Intermediário aparece apenas quando Tipo de Emitente = &quot;Intermediário&quot;</p>
-          <p className="text-sm mt-2">Configure em Dados Gerais → Tipo de Emitente</p>
-        </div>
-      ),
-      disabled: !showIntermediario
+      )
     },
     {
       id: 'servicos',

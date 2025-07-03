@@ -232,7 +232,7 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         </div>
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-96">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-[600px]">
         <pre className="text-sm">
           <code
             className="text-gray-900"
