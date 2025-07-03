@@ -59,10 +59,10 @@
               <cMun>3542404</cMun>
               <CEP>19570000</CEP>
             </endNac>
-            <xLgr>AV. ATILIO ALBERTINI</xLgr>
+            <xLgr>AV. Teste</xLgr>
             <nro>0</nro>
             <xCpl>S/N - PARTE</xCpl>
-            <xBairro>DISTRITO INDUSTRIAL</xBairro>
+            <xBairro>Centro</xBairro>
           </end>
           <regTrib>
             <opSimpNac>1</opSimpNac>
@@ -70,16 +70,16 @@
           </regTrib>
         </prest>
         <toma>
-          <CNPJ>43999424000114</CNPJ>
-          <xNome>VOLVO DO BRASIL VEICULOS LTDA</xNome>
+          <CNPJ>0000000000000</CNPJ>
+          <xNome>Empresa Tomadora 01</xNome>
           <end>
             <endNac>
               <cMun>4106902</cMun>
               <CEP>81260900</CEP>
             </endNac>
-            <xLgr>AV JUSCELINO K. DE OLIVEIRA</xLgr>
-            <nro>2600</nro>
-            <xBairro>CIDADE INDUSTRIAL DE</xBairro>
+            <xLgr>AV. Teste</xLgr>
+            <nro>0</nro>
+            <xBairro>Centro</xBairro>
           </end>
         </toma>
         <serv>
