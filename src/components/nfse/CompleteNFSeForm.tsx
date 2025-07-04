@@ -13,6 +13,15 @@ import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
 import { loadXMLTemplate } from '../../utils/xmlTemplateParser';
 import { getCurrentBrazilDateTime } from '../../utils/dateTimeUtils';
 import XMLUploader from '../ui/XMLUploader';
+import { 
+  FiUpload, 
+  FiFileText, 
+  FiUser, 
+  FiUsers, 
+  FiUserCheck, 
+  FiSettings, 
+  FiDollarSign 
+} from 'react-icons/fi';
 //import { getSavedDataPreview } from '../../hooks/usePersistentState';
 
 interface CompleteNFSeFormProps {
@@ -238,7 +247,12 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
   const tabs = [
     {
       id: 'upload-xml',
-      label: '📁 Carregar XML',
+      label: (
+        <span className="flex items-center gap-2">
+          <FiUpload className="w-4 h-4" />
+          Carregar XML
+        </span>
+      ),
       content: (
         <div className="space-y-6">
           <div className="border border-gray-200 rounded-md p-4">
@@ -254,7 +268,12 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     },
     {
       id: 'dados-gerais',
-      label: 'Dados Gerais',
+      label: (
+        <span className="flex items-center gap-2">
+          <FiFileText className="w-4 h-4" />
+          Dados Gerais
+        </span>
+      ),
       content: (
         <DadosGeraisForm
           data={formData.infDPS}
@@ -272,7 +291,12 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     },
     {
       id: 'prestador',
-      label: 'Prestador',
+      label: (
+        <span className="flex items-center gap-2">
+          <FiUser className="w-4 h-4" />
+          Prestador
+        </span>
+      ),
       content: (
         <PrestadorForm
           data={formData.infDPS.prest}
@@ -282,7 +306,12 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     },
     {
       id: 'tomador',
-      label: 'Tomador',
+      label: (
+        <span className="flex items-center gap-2">
+          <FiUsers className="w-4 h-4" />
+          Tomador
+        </span>
+      ),
       content: (
         <TomadorForm
           data={formData.infDPS.toma}
@@ -292,7 +321,12 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     },
     {
       id: 'intermediario',
-      label: 'Intermediário',
+      label: (
+        <span className="flex items-center gap-2">
+          <FiUserCheck className="w-4 h-4" />
+          Intermediário
+        </span>
+      ),
       content: (
         <IntermediarioForm
           data={formData.infDPS.interm || {
@@ -310,7 +344,12 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     },
     {
       id: 'servicos',
-      label: 'Serviços',
+      label: (
+        <span className="flex items-center gap-2">
+          <FiSettings className="w-4 h-4" />
+          Serviços
+        </span>
+      ),
       content: (
         <ServicosForm
           data={formData.infDPS.serv}
@@ -320,7 +359,12 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
     },
     {
       id: 'valores',
-      label: 'Valores e Tributação',
+      label: (
+        <span className="flex items-center gap-2">
+          <FiDollarSign className="w-4 h-4" />
+          Valores e Tributação
+        </span>
+      ),
       content: (
         <ValoresForm
           data={formData.infDPS.valores}
