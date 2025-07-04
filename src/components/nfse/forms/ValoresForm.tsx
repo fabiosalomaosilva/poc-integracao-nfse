@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { InputField, SelectField, CheckboxField, FieldGroup } from '../../ui/FormField';
 import { FocusStableNumeric } from '../../ui/FocusStableNumeric';
 import { SubTabs } from '../../ui/Tabs';
@@ -8,47 +8,29 @@ import { ValoresCompletos } from '../../../types/nfse/complete';
 
 interface ValoresFormProps {
   data: ValoresCompletos;
-  onChange: (data: Partial<ValoresCompletos>) => void;
+  onChange: (data: ValoresCompletos) => void;
 }
 
 export default function ValoresForm({ data, onChange }: ValoresFormProps) {
-  // Garantir estrutura mínima dos dados para evitar erros de undefined
-  const safeData = useMemo(() => {
-    const defaultTribMun = {
-      tribISSQN: '1' as const,
-      pAliq: 0,
-      tpRetISSQN: '1' as const
-    };
-
-    return {
-      ...data,
-      vServPrest: data?.vServPrest || { vServ: 0 },
-      trib: {
-        ...data?.trib,
-        tribMun: {
-          ...defaultTribMun,
-          ...data?.trib?.tribMun
-        },
-        tribFed: data?.trib?.tribFed || {},
-        totTrib: data?.trib?.totTrib || {}
-      }
-    };
-  }, [data]);
   const updateField = useCallback((field: string, value: any) => {
-    onChange({ [field]: value });
-  }, [onChange]);
+    const newData = { ...data, [field]: value };
+    onChange(newData);
+  }, [data, onChange]);
 
   const updateNestedField = useCallback((section: string, field: string, value: any) => {
-    onChange({
+    const newData = {
+      ...data,
       [section]: {
         ...data[section as keyof ValoresCompletos],
         [field]: value
       }
-    });
-  }, [onChange, data]);
+    };
+    onChange(newData);
+  }, [data, onChange]);
 
   const updateDeepNestedField = useCallback((section: string, subsection: string, field: string, value: any) => {
-    onChange({
+    const newData = {
+      ...data,
       [section]: {
         ...data[section as keyof ValoresCompletos],
         [subsection]: {
@@ -56,148 +38,83 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           [field]: value
         }
       }
-    });
-  }, [onChange, data]);
+    };
+    onChange(newData);
+  }, [data, onChange]);
 
-  // Estados para controlar quais seções estão ativas - usar data original para refletir estado real
-  const hasDescontos = !!data?.vDescCondIncond;
-  const hasDeducoes = !!data?.vDedRed;
-  const hasTributacaoFederal = !!data?.trib?.tribFed && Object.keys(data.trib.tribFed).length > 0;
-  const hasTotalTributos = !!data?.trib?.totTrib && Object.keys(data.trib.totTrib).length > 0;
-  const hasBeneficioMunicipal = !!data?.trib?.tribMun?.BM;
-  const hasExigibilidadeSuspensa = !!data?.trib?.tribMun?.exigSusp;
-  const hasPisCofins = !!data?.trib?.tribFed?.piscofins;
+  // Estados para controlar quais seções estão ativas
+  const hasDescontos = !!data.vDescCondIncond;
+  const hasDeducoes = !!data.vDedRed;
+  const hasTributacaoFederal = !!data.trib.tribFed;
+  const hasTotalTributos = !!data.trib.totTrib;
+  const hasBeneficioMunicipal = !!data.trib.tribMun.BM;
+  const hasExigibilidadeSuspensa = !!data.trib.tribMun.exigSusp;
+  const hasPisCofins = !!data.trib.tribFed?.piscofins;
 
-  // Callbacks específicos para cada checkbox
-  const toggleDescontos = useCallback((checked: boolean) => {
-    if (checked) {
-      onChange({ vDescCondIncond: { vDescIncond: 0, vDescCond: 0 } });
+  const toggleSection = useCallback((section: string, ativo: boolean) => {
+    if (ativo) {
+      switch (section) {
+        case 'vDescCondIncond':
+          updateField('vDescCondIncond', { vDescIncond: 0, vDescCond: 0 });
+          break;
+        case 'vDedRed':
+          updateField('vDedRed', { pDR: 0 });
+          break;
+        case 'tribFed':
+          updateNestedField('trib', 'tribFed', {
+            vRetCP: 0,
+            vRetIRRF: 0,
+            vRetCSLL: 0
+          });
+          break;
+        case 'totTrib':
+          updateDeepNestedField('trib', 'totTrib', 'vTotTrib', {
+            vTotTribFed: 0,
+            vTotTribEst: 0,
+            vTotTribMun: 0
+          });
+          break;
+        case 'BM':
+          updateDeepNestedField('trib', 'tribMun', 'BM', {
+            tpBM: '',
+            nBM: ''
+          });
+          break;
+        case 'exigSusp':
+          updateDeepNestedField('trib', 'tribMun', 'exigSusp', {
+            tpSusp: '',
+            nProcesso: ''
+          });
+          break;
+        case 'piscofins':
+          updateDeepNestedField('trib', 'tribFed', 'piscofins', {
+            CST: '',
+            vPis: 0,
+            vCofins: 0
+          });
+          break;
+      }
     } else {
-      const newData = { ...data };
-      delete newData.vDescCondIncond;
-      onChange(newData);
+      if (section.includes('.')) {
+        const [mainSection, subSection] = section.split('.');
+        const currentData = { ...data[mainSection as keyof ValoresCompletos] as any };
+        delete currentData[subSection];
+        updateField(mainSection, currentData);
+      } else {
+        const newData = { ...data };
+        delete newData[section as keyof ValoresCompletos];
+        onChange(newData);
+      }
     }
-  }, [onChange, data]);
-
-  const toggleDeducoes = useCallback((checked: boolean) => {
-    if (checked) {
-      onChange({ vDedRed: { pDR: 0 } });
-    } else {
-      const newData = { ...data };
-      delete newData.vDedRed;
-      onChange(newData);
-    }
-  }, [onChange, data]);
-
-  const toggleBeneficioMunicipal = useCallback((checked: boolean) => {
-    if (checked) {
-      onChange({
-        trib: {
-          ...data.trib,
-          tribMun: {
-            ...data.trib.tribMun,
-            BM: { tpBM: '', nBM: '' }
-          }
-        }
-      });
-    } else {
-      const newTribMun = { ...data.trib.tribMun };
-      delete newTribMun.BM;
-      onChange({
-        trib: {
-          ...data.trib,
-          tribMun: newTribMun
-        }
-      });
-    }
-  }, [onChange, data]);
-
-  const toggleExigibilidadeSuspensa = useCallback((checked: boolean) => {
-    if (checked) {
-      onChange({
-        trib: {
-          ...data.trib,
-          tribMun: {
-            ...data.trib.tribMun,
-            exigSusp: { tpSusp: '', nProcesso: '' }
-          }
-        }
-      });
-    } else {
-      const newTribMun = { ...data.trib.tribMun };
-      delete newTribMun.exigSusp;
-      onChange({
-        trib: {
-          ...data.trib,
-          tribMun: newTribMun
-        }
-      });
-    }
-  }, [onChange, data]);
-
-  const toggleTributacaoFederal = useCallback((checked: boolean) => {
-    if (checked) {
-      onChange({
-        trib: {
-          ...data.trib,
-          tribFed: { vRetCP: 0, vRetIRRF: 0, vRetCSLL: 0 }
-        }
-      });
-    } else {
-      const newTrib = { ...data.trib };
-      delete newTrib.tribFed;
-      onChange({ trib: newTrib });
-    }
-  }, [onChange, data]);
-
-  const togglePisCofins = useCallback((checked: boolean) => {
-    if (checked) {
-      onChange({
-        trib: {
-          ...data.trib,
-          tribFed: {
-            ...data.trib.tribFed,
-            piscofins: { CST: '', vPis: 0, vCofins: 0 }
-          }
-        }
-      });
-    } else {
-      const newTribFed = { ...data.trib.tribFed };
-      delete newTribFed.piscofins;
-      onChange({
-        trib: {
-          ...data.trib,
-          tribFed: newTribFed
-        }
-      });
-    }
-  }, [onChange, data]);
-
-  const toggleTotalTributos = useCallback((checked: boolean) => {
-    if (checked) {
-      onChange({
-        trib: {
-          ...data.trib,
-          totTrib: {
-            vTotTrib: { vTotTribFed: 0, vTotTribEst: 0, vTotTribMun: 0 }
-          }
-        }
-      });
-    } else {
-      const newTrib = { ...data.trib };
-      delete newTrib.totTrib;
-      onChange({ trib: newTrib });
-    }
-  }, [onChange, data]);
-
+  }, [data, onChange, updateField, updateNestedField, updateDeepNestedField]);
 
   // Função para calcular valores automaticamente
   const calcularValores = useCallback(() => {
-    const vServ = safeData.vServPrest.vServ || 0;
-    const vDescIncond = safeData.vDescCondIncond?.vDescIncond || 0;
-    const vDescCond = safeData.vDescCondIncond?.vDescCond || 0;
-    const vDR = safeData.vDedRed?.vDR || 0;
-    const pAliq = safeData.trib.tribMun.pAliq || 0;
+    const vServ = data.vServPrest.vServ || 0;
+    const vDescIncond = data.vDescCondIncond?.vDescIncond || 0;
+    const vDescCond = data.vDescCondIncond?.vDescCond || 0;
+    const vDR = data.vDedRed?.vDR || 0;
+    const pAliq = data.trib.tribMun.pAliq || 0;
 
     const vBC = vServ - vDescIncond - vDescCond - vDR;
     const vISS = (vBC * pAliq) / 100;
@@ -207,6 +124,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
     updateDeepNestedField('trib', 'tribMun', 'vBC', vBC);
     updateDeepNestedField('trib', 'tribMun', 'vISS', vISS);
     updateField('vLiq', vLiq);
+<<<<<<< HEAD
   }, [safeData, updateDeepNestedField, updateField]);
 
   // Callbacks estáveis para campos específicos para evitar perda de foco
@@ -223,6 +141,9 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
       nProcesso: value
     });
   }, [updateDeepNestedField, safeData.trib.tribMun.exigSusp]);
+=======
+  }, [data, updateDeepNestedField, updateField]);
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
 
   // Tab 1: Valores do Serviço
   const ValoresServicoTab = () => (
@@ -234,7 +155,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         <FocusStableNumeric
           label="Valor do Serviço"
           name="vServ"
-          value={safeData.vServPrest.vServ}
+          value={data.vServPrest.vServ}
           onChange={(value) => updateNestedField('vServPrest', 'vServ', value || 0)}
           required
           min={0}
@@ -244,7 +165,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         <FocusStableNumeric
           label="Valor Recebido pelo Intermediário"
           name="vReceb"
-          value={safeData.vServPrest.vReceb}
+          value={data.vServPrest.vReceb}
           onChange={(value) => updateNestedField('vServPrest', 'vReceb', value)}
           min={0}
           help="Valor que o intermediário recebe (se houver)"
@@ -273,11 +194,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         label="Aplicar Descontos"
         name="hasDescontos"
         checked={hasDescontos}
-        onChange={toggleDescontos}
+        onChange={(checked) => toggleSection('vDescCondIncond', checked)}
         help="Marque se há descontos a serem aplicados"
       />
 
-      {hasDescontos && safeData.vDescCondIncond && (
+      {hasDescontos && data.vDescCondIncond && (
         <FieldGroup
           title="Descontos Condicionais e Incondicionais"
           description="Valores de desconto aplicados ao serviço"
@@ -286,7 +207,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             <FocusStableNumeric
               label="Desconto Incondicional"
               name="vDescIncond"
-              value={safeData.vDescCondIncond.vDescIncond}
+              value={data.vDescCondIncond.vDescIncond}
               onChange={(value) => updateNestedField('vDescCondIncond', 'vDescIncond', value || 0)}
               min={0}
               help="Desconto garantido independente de condições"
@@ -295,7 +216,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             <FocusStableNumeric
               label="Desconto Condicional"
               name="vDescCond"
-              value={safeData.vDescCondIncond.vDescCond}
+              value={data.vDescCondIncond.vDescCond}
               onChange={(value) => updateNestedField('vDescCondIncond', 'vDescCond', value || 0)}
               min={0}
               help="Desconto condicionado a critérios específicos"
@@ -313,11 +234,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         label="Aplicar Deduções/Reduções"
         name="hasDeducoes"
         checked={hasDeducoes}
-        onChange={toggleDeducoes}
+        onChange={(checked) => toggleSection('vDedRed', checked)}
         help="Marque se há deduções ou reduções a serem aplicadas"
       />
 
-      {hasDeducoes && safeData.vDedRed && (
+      {hasDeducoes && data.vDedRed && (
         <FieldGroup
           title="Deduções e Reduções"
           description="Valores ou percentuais de dedução aplicados"
@@ -326,7 +247,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             <FocusStableNumeric
               label="Percentual de Dedução/Redução (%)"
               name="pDR"
-              value={safeData.vDedRed.pDR}
+              value={data.vDedRed.pDR}
               onChange={(value) => {
                 updateNestedField('vDedRed', 'pDR', value);
                 // Limpar valor se percentual for definido
@@ -342,7 +263,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             <FocusStableNumeric
               label="Valor da Dedução/Redução"
               name="vDR"
-              value={safeData.vDedRed.vDR}
+              value={data.vDedRed.vDR}
               onChange={(value) => {
                 updateNestedField('vDedRed', 'vDR', value);
                 // Limpar percentual se valor for definido
@@ -377,7 +298,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           <SelectField
             label="Tributação do ISSQN"
             name="tribISSQN"
-            value={safeData.trib.tribMun.tribISSQN}
+            value={data.trib.tribMun.tribISSQN}
             onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'tribISSQN', value)}
             required
             options={[
@@ -389,11 +310,15 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             help="Situação da tributação do ISSQN"
           />
 
+<<<<<<< HEAD
           {safeData.trib.tribMun.tribISSQN === '3' && (
+=======
+          {data.trib.tribMun.tribISSQN === '2' && (
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
             <InputField
               label="País de Resultado do Serviço"
               name="cPaisResult"
-              value={safeData.trib.tribMun.cPaisResult || ''}
+              value={data.trib.tribMun.cPaisResult || ''}
               onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'cPaisResult', value)}
               maxLength={3}
               placeholder="Ex: USA, FRA"
@@ -401,11 +326,15 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             />
           )}
 
+<<<<<<< HEAD
           {safeData.trib.tribMun.tribISSQN === '2' && (
+=======
+          {data.trib.tribMun.tribISSQN === '4' && (
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
             <SelectField
               label="Tipo de Imunidade"
               name="tpImunidade"
-              value={safeData.trib.tribMun.tpImunidade || ''}
+              value={data.trib.tribMun.tpImunidade || ''}
               onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'tpImunidade', value)}
               options={[
                 { value: '0', label: 'Imunidade (tipo não informado na nota de origem)nidade' },
@@ -419,12 +348,12 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
             />
           )}
 
-          {safeData.trib.tribMun.tribISSQN === '1' && (
+          {data.trib.tribMun.tribISSQN === '1' && (
             <>
               <FocusStableNumeric
                 label="Alíquota do ISSQN (%)"
                 name="pAliq"
-                value={safeData.trib.tribMun.pAliq}
+                value={data.trib.tribMun.pAliq}
                 onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'pAliq', value)}
                 min={0}
                 max={100}
@@ -434,7 +363,7 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <SelectField
                 label="Retenção do ISSQN"
                 name="tpRetISSQN"
-                value={safeData.trib.tribMun.tpRetISSQN}
+                value={data.trib.tribMun.tpRetISSQN || '1'}
                 onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'tpRetISSQN', value)}
                 options={[
                   { value: '1', label: 'Não Retido' },
@@ -454,11 +383,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           label="Benefício Municipal"
           name="hasBeneficioMunicipal"
           checked={hasBeneficioMunicipal}
-          onChange={toggleBeneficioMunicipal}
+          onChange={(checked) => toggleSection('BM', checked)}
           help="Marque se há benefício municipal aplicável"
         />
 
-        {hasBeneficioMunicipal && safeData.trib.tribMun.BM && (
+        {hasBeneficioMunicipal && data.trib.tribMun.BM && (
           <FieldGroup
             title="Dados do Benefício Municipal"
             description="Informações sobre benefício fiscal municipal"
@@ -468,8 +397,8 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <SelectField
                 label="Tipo de Benefício"
                 name="tpBM"
-                value={safeData.trib.tribMun.BM.tpBM}
-                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'BM', { ...safeData.trib.tribMun.BM, tpBM: value })}
+                value={data.trib.tribMun.BM.tpBM}
+                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'BM', { ...data.trib.tribMun.BM, tpBM: value })}
                 required
                 options={[
                   { value: '1', label: 'Redução da base de cálculo' },
@@ -482,22 +411,27 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <InputField
                 label="Número do Benefício"
                 name="nBM"
-                value={safeData.trib.tribMun.BM.nBM}
-                onChange={handleNBMChange}
+                value={data.trib.tribMun.BM.nBM}
+                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'BM', { ...data.trib.tribMun.BM, nBM: value })}
                 required
                 maxLength={14}
                 placeholder="Ex: 12345678901234"
-                help="Número do benefício municipal"
               />
 
               <FocusStableNumeric
                 label="Valor da Redução da Base de Cálculo"
                 name="vRedBCBM"
-                value={safeData.trib.tribMun.BM.vRedBCBM}
+                value={data.trib.tribMun.BM.vRedBCBM}
                 onChange={(value) => {
+<<<<<<< HEAD
                   updateDeepNestedField('trib', 'tribMun', 'BM', {
                     ...safeData.trib.tribMun.BM,
                     vRedBCBM: value
+=======
+                  updateDeepNestedField('trib', 'tribMun', 'BM', { 
+                    ...data.trib.tribMun.BM, 
+                    vRedBCBM: value 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                   });
                 }}
                 min={0}
@@ -514,11 +448,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
           label="Exigibilidade Suspensa"
           name="hasExigibilidadeSuspensa"
           checked={hasExigibilidadeSuspensa}
-          onChange={toggleExigibilidadeSuspensa}
+          onChange={(checked) => toggleSection('exigSusp', checked)}
           help="Marque se há suspensão da exigibilidade"
         />
 
-        {hasExigibilidadeSuspensa && safeData.trib.tribMun.exigSusp && (
+        {hasExigibilidadeSuspensa && data.trib.tribMun.exigSusp && (
           <FieldGroup
             title="Dados da Exigibilidade Suspensa"
             description="Informações sobre suspensão da exigibilidade do tributo"
@@ -528,10 +462,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <SelectField
                 label="Tipo de Suspensão"
                 name="tpSusp"
+<<<<<<< HEAD
                 value={safeData.trib.tribMun.exigSusp.tpSusp}
                 onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'exigSusp', {
                   ...safeData.trib.tribMun.exigSusp,
                   tpSusp: value
+=======
+                value={data.trib.tribMun.exigSusp.tpSusp}
+                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'exigSusp', { 
+                  ...data.trib.tribMun.exigSusp, 
+                  tpSusp: value 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                 })}
                 required
                 options={[
@@ -543,8 +484,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <InputField
                 label="Número do Processo"
                 name="nProcesso"
-                value={safeData.trib.tribMun.exigSusp.nProcesso}
-                onChange={handleNProcessoChange}
+                value={data.trib.tribMun.exigSusp.nProcesso}
+                onChange={(value) => updateDeepNestedField('trib', 'tribMun', 'exigSusp', { 
+                  ...data.trib.tribMun.exigSusp, 
+                  nProcesso: value 
+                })}
                 required
                 maxLength={20}
                 placeholder="Ex: 1234567-89.2024.8.26.0001"
@@ -563,11 +507,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         label="Aplicar Tributação Federal"
         name="hasTributacaoFederal"
         checked={hasTributacaoFederal}
-        onChange={toggleTributacaoFederal}
+        onChange={(checked) => toggleSection('tribFed', checked)}
         help="Marque se há tributação federal (PIS/COFINS, retenções)"
       />
 
-      {hasTributacaoFederal && safeData.trib.tribFed && (
+      {hasTributacaoFederal && data.trib.tribFed && (
         <div className="space-y-6">
           {/* PIS/COFINS */}
           <div>
@@ -575,11 +519,11 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               label="PIS/COFINS"
               name="hasPisCofins"
               checked={hasPisCofins}
-              onChange={togglePisCofins}
+              onChange={(checked) => toggleSection('piscofins', checked)}
               help="Marque se há incidência de PIS/COFINS"
             />
 
-            {hasPisCofins && safeData.trib.tribFed?.piscofins && (
+            {hasPisCofins && data.trib.tribFed!.piscofins && (
               <FieldGroup
                 title="PIS e COFINS"
                 description="Configurações do PIS e COFINS"
@@ -589,10 +533,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                   <SelectField
                     label="CST PIS/COFINS"
                     name="CST"
+<<<<<<< HEAD
                     value={safeData.trib.tribFed!.piscofins!.CST}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
                       ...safeData.trib.tribFed!.piscofins,
                       CST: value
+=======
+                    value={data.trib.tribFed!.piscofins!.CST}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins, 
+                      CST: value 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                     })}
                     required
                     options={[
@@ -612,10 +563,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                   <FocusStableNumeric
                     label="Base de Cálculo PIS/COFINS"
                     name="vBCPisCofins"
+<<<<<<< HEAD
                     value={safeData.trib.tribFed!.piscofins!.vBCPisCofins}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
                       ...safeData.trib.tribFed!.piscofins!,
                       vBCPisCofins: value
+=======
+                    value={data.trib.tribFed!.piscofins!.vBCPisCofins}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      vBCPisCofins: value 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                     })}
                     min={0}
                     help="Base de cálculo para PIS/COFINS"
@@ -624,10 +582,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                   <FocusStableNumeric
                     label="Alíquota PIS (%)"
                     name="pAliqPis"
+<<<<<<< HEAD
                     value={safeData.trib.tribFed!.piscofins!.pAliqPis}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
                       ...safeData.trib.tribFed!.piscofins!,
                       pAliqPis: value
+=======
+                    value={data.trib.tribFed!.piscofins!.pAliqPis}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      pAliqPis: value 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                     })}
                     min={0}
                     help="Alíquota do PIS"
@@ -636,10 +601,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                   <FocusStableNumeric
                     label="Alíquota COFINS (%)"
                     name="pAliqCofins"
+<<<<<<< HEAD
                     value={safeData.trib.tribFed!.piscofins!.pAliqCofins}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
                       ...safeData.trib.tribFed!.piscofins!,
                       pAliqCofins: value
+=======
+                    value={data.trib.tribFed!.piscofins!.pAliqCofins}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      pAliqCofins: value 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                     })}
                     min={0}
                     help="Alíquota do COFINS"
@@ -648,10 +620,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                   <FocusStableNumeric
                     label="Valor PIS"
                     name="vPis"
+<<<<<<< HEAD
                     value={safeData.trib.tribFed!.piscofins!.vPis}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
                       ...safeData.trib.tribFed!.piscofins!,
                       vPis: value || 0
+=======
+                    value={data.trib.tribFed!.piscofins!.vPis}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      vPis: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                     })}
                     min={0}
                     help="Valor calculado do PIS"
@@ -660,10 +639,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                   <FocusStableNumeric
                     label="Valor COFINS"
                     name="vCofins"
+<<<<<<< HEAD
                     value={safeData.trib.tribFed!.piscofins!.vCofins}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
                       ...safeData.trib.tribFed!.piscofins!,
                       vCofins: value || 0
+=======
+                    value={data.trib.tribFed!.piscofins!.vCofins}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      vCofins: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                     })}
                     min={0}
                     help="Valor calculado do COFINS"
@@ -672,10 +658,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
                   <SelectField
                     label="Retenção PIS/COFINS"
                     name="tpRetPisCofins"
+<<<<<<< HEAD
                     value={safeData.trib.tribFed!.piscofins!.tpRetPisCofins || '2'}
                     onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', {
                       ...safeData.trib.tribFed!.piscofins!,
                       tpRetPisCofins: value
+=======
+                    value={data.trib.tribFed!.piscofins!.tpRetPisCofins || '2'}
+                    onChange={(value) => updateDeepNestedField('trib', 'tribFed', 'piscofins', { 
+                      ...data.trib.tribFed!.piscofins!, 
+                      tpRetPisCofins: value 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                     })}
                     options={[
                       { value: '1', label: 'Retido' },
@@ -697,10 +690,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <FocusStableNumeric
                 label="Valor Retido Contribuição Previdenciária"
                 name="vRetCP"
+<<<<<<< HEAD
                 value={safeData.trib.tribFed!.vRetCP}
                 onChange={(value) => updateNestedField('trib', 'tribFed', {
                   ...safeData.trib.tribFed!,
                   vRetCP: value || 0
+=======
+                value={data.trib.tribFed!.vRetCP}
+                onChange={(value) => updateNestedField('trib', 'tribFed', { 
+                  ...data.trib.tribFed!, 
+                  vRetCP: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                 })}
                 min={0}
                 help="INSS retido na fonte"
@@ -709,10 +709,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <FocusStableNumeric
                 label="Valor Retido IRRF"
                 name="vRetIRRF"
+<<<<<<< HEAD
                 value={safeData.trib.tribFed!.vRetIRRF}
                 onChange={(value) => updateNestedField('trib', 'tribFed', {
                   ...safeData.trib.tribFed!,
                   vRetIRRF: value || 0
+=======
+                value={data.trib.tribFed!.vRetIRRF}
+                onChange={(value) => updateNestedField('trib', 'tribFed', { 
+                  ...data.trib.tribFed!, 
+                  vRetIRRF: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                 })}
                 min={0}
                 help="Imposto de Renda retido na fonte"
@@ -721,10 +728,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <FocusStableNumeric
                 label="Valor Retido CSLL"
                 name="vRetCSLL"
+<<<<<<< HEAD
                 value={safeData.trib.tribFed!.vRetCSLL}
                 onChange={(value) => updateNestedField('trib', 'tribFed', {
                   ...safeData.trib.tribFed!,
                   vRetCSLL: value || 0
+=======
+                value={data.trib.tribFed!.vRetCSLL}
+                onChange={(value) => updateNestedField('trib', 'tribFed', { 
+                  ...data.trib.tribFed!, 
+                  vRetCSLL: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                 })}
                 min={0}
                 help="Contribuição Social sobre Lucro Líquido retida"
@@ -743,24 +757,31 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
         label="Informar Total de Tributos"
         name="hasTotalTributos"
         checked={hasTotalTributos}
-        onChange={toggleTotalTributos}
+        onChange={(checked) => toggleSection('totTrib', checked)}
         help="Marque para informar o total de tributos incidentes"
       />
 
-      {hasTotalTributos && safeData.trib.totTrib && (
+      {hasTotalTributos && data.trib.totTrib && (
         <FieldGroup
           title="Total de Tributos Incidentes"
           description="Totalização dos tributos federais, estaduais e municipais"
         >
-          {safeData.trib.totTrib?.vTotTrib && (
+          {data.trib.totTrib!.vTotTrib && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FocusStableNumeric
                 label="Total Tributos Federais"
                 name="vTotTribFed"
+<<<<<<< HEAD
                 value={safeData.trib.totTrib!.vTotTrib!.vTotTribFed}
                 onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', {
                   ...safeData.trib.totTrib!.vTotTrib!,
                   vTotTribFed: value || 0
+=======
+                value={data.trib.totTrib!.vTotTrib!.vTotTribFed}
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                  ...data.trib.totTrib!.vTotTrib!, 
+                  vTotTribFed: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                 })}
                 min={0}
                 help="Soma de todos os tributos federais"
@@ -769,10 +790,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <FocusStableNumeric
                 label="Total Tributos Estaduais"
                 name="vTotTribEst"
+<<<<<<< HEAD
                 value={safeData.trib.totTrib!.vTotTrib!.vTotTribEst}
                 onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', {
                   ...safeData.trib.totTrib!.vTotTrib!,
                   vTotTribEst: value || 0
+=======
+                value={data.trib.totTrib!.vTotTrib!.vTotTribEst}
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                  ...data.trib.totTrib!.vTotTrib!, 
+                  vTotTribEst: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                 })}
                 min={0}
                 help="Soma de todos os tributos estaduais"
@@ -781,10 +809,17 @@ export default function ValoresForm({ data, onChange }: ValoresFormProps) {
               <FocusStableNumeric
                 label="Total Tributos Municipais"
                 name="vTotTribMun"
+<<<<<<< HEAD
                 value={safeData.trib.totTrib!.vTotTrib!.vTotTribMun}
                 onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', {
                   ...safeData.trib.totTrib!.vTotTrib!,
                   vTotTribMun: value || 0
+=======
+                value={data.trib.totTrib!.vTotTrib!.vTotTribMun}
+                onChange={(value) => updateDeepNestedField('trib', 'totTrib', 'vTotTrib', { 
+                  ...data.trib.totTrib!.vTotTrib!, 
+                  vTotTribMun: value || 0 
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
                 })}
                 min={0}
                 help="Soma de todos os tributos municipais (ISSQN)"

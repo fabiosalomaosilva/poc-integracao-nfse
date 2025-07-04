@@ -2,17 +2,10 @@ import { XMLBuilder, XMLUtils } from './xmlBuilder';
 import { CompleteDPSData, CompleteNFSeData } from '../../types/nfse/complete';
 import { gerarChaveAcessoNFSe, gerarChaveAcessoDPS } from '../../utils/chaveAcessoGenerator';
 import { validarEmitente, validarPrestador } from '../../utils/documentValidator';
-import municipiosData from '../../data/CdMunicipio.json';
 
 // Helper para formatar números de forma segura
 function safeToFixed(value: number | undefined, decimals: number = 2): string | undefined {
   return value !== undefined && value !== null && !isNaN(value) ? value.toFixed(decimals) : undefined;
-}
-
-// Helper para obter nome da cidade pelo código IBGE
-function getNomeCidadePorCodigo(codigo: string): string {
-  const municipio = municipiosData.find(m => m.Codigo === codigo);
-  return municipio ? municipio.Municipio : codigo; // Retorna o código se não encontrar
 }
 
 export class CompleteNFSeGenerator {
@@ -487,15 +480,6 @@ export class CompleteNFSeGenerator {
         // tribISSQN sempre obrigatório
         tribMunBuilder.addElement('tribISSQN', trib.tribMun?.tribISSQN || '1');
 
-        // Exigibilidade Suspensa (condicional) - deve vir após tribISSQN
-        if (trib.tribMun.exigSusp && XMLUtils.hasAnyValue(trib.tribMun.exigSusp)) {
-          tribMunBuilder.addGroup('exigSusp', undefined, (exigBuilder) => {
-            exigBuilder
-              .addElement('tpSusp', trib.tribMun.exigSusp.tpSusp || '1')
-              .addElement('nProcesso', trib.tribMun.exigSusp.nProcesso);
-          });
-        }
-
         // pAliq sempre obrigatório (mesmo que 0.00)
         const pAliq = trib.tribMun?.pAliq;
         tribMunBuilder.addElement('pAliq', pAliq ? XMLUtils.formatPercentage(pAliq, 2) : '0.00');
@@ -519,6 +503,15 @@ export class CompleteNFSeGenerator {
               .addElement('tpBM', trib.tribMun.BM.tpBM)
               .addElement('nBM', trib.tribMun.BM.nBM)
               .addOptional('vRedBCBM', safeToFixed(trib.tribMun.BM.vRedBCBM));
+          });
+        }
+
+        // Exigibilidade Suspensa (condicional)
+        if (trib.tribMun.exigSusp && XMLUtils.hasAnyValue(trib.tribMun.exigSusp)) {
+          tribMunBuilder.addGroup('exigSusp', undefined, (exigBuilder) => {
+            exigBuilder
+              .addElement('tpSusp', trib.tribMun.exigSusp.tpSusp)
+              .addElement('nProcesso', trib.tribMun.exigSusp.nProcesso);
           });
         }
       });
@@ -581,13 +574,9 @@ export class CompleteNFSeGenerator {
   }
 
   private addDadosNFSe(infNFSe: any): void {
-    // Obter nome da cidade pelo código do local de prestação
-    const cLocPrestacao = infNFSe.DPS?.infDPS?.serv?.locPrest?.cLocPrestacao;
-    const xLocPrestacao = cLocPrestacao ? getNomeCidadePorCodigo(cLocPrestacao) : infNFSe.xLocPrestacao;
-    
     this.xmlBuilder
       .addElement('xLocEmi', XMLUtils.sanitizeText(infNFSe.xLocEmi))
-      .addElement('xLocPrestacao', XMLUtils.sanitizeText(xLocPrestacao))
+      .addElement('xLocPrestacao', XMLUtils.sanitizeText(infNFSe.xLocPrestacao))
       .addOptional('nNFSe', infNFSe.nNFSe)
       .addOptional('cLocIncid', infNFSe.cLocIncid)
       .addOptional('xLocIncid', XMLUtils.sanitizeText(infNFSe.xLocIncid))

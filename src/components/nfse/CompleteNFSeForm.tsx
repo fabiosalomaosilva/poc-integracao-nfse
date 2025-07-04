@@ -194,8 +194,8 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         nNFSe: '1',
         cLocIncid: dpsData.infDPS.cLocEmi,
         xLocIncid: 'Regente Feijó',
-        xTribNac: dpsData.infDPS.serv?.cServ?.xDescServ || '',
-        xTribMun: dpsData.infDPS.serv?.cServ?.xDescServ?.substring(0, 40) || '',
+        xTribNac: dpsData.infDPS.serv.cServ.xDescServ,
+        xTribMun: dpsData.infDPS.serv.cServ.xDescServ?.substring(0, 40),
         verAplic: '1.00',
         ambGer: '1',
         tpEmis: '2',
@@ -203,31 +203,30 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
         dhProc: new Date().toISOString(),
         nDFSe: '1',
         emit: {
-          ...(dpsData.infDPS.prest?.CNPJ ? { CNPJ: dpsData.infDPS.prest.CNPJ } : {}),
-          ...(dpsData.infDPS.prest?.CPF ? { CPF: dpsData.infDPS.prest.CPF } : {}),
-          IM: dpsData.infDPS.prest?.IM || '4292',
-          xNome: dpsData.infDPS.prest?.xNome || 'Empresa de Teste 01',
-          xFant: dpsData.infDPS.prest?.xFant || 'Empresa de Teste 01',
+          CNPJ: dpsData.infDPS.prest.CNPJ || '0000000000000',
+          IM: dpsData.infDPS.prest.IM || '4292',
+          xNome: dpsData.infDPS.prest.xNome || 'Empresa de Teste 01',
+          xFant: dpsData.infDPS.prest.xFant || 'Empresa de Teste 01',
           enderNac: {
-            xLgr: dpsData.infDPS.prest?.end?.xLgr || 'AV. ATILIO ALBERTINI',
-            nro: dpsData.infDPS.prest?.end?.nro || '0',
-            xCpl: dpsData.infDPS.prest?.end?.xCpl || 'S/N - PARTE',
-            xBairro: dpsData.infDPS.prest?.end?.xBairro || 'DISTRITO INDUSTRIAL',
-            cMun: dpsData.infDPS.prest?.end?.endNac?.cMun || '3542404',
+            xLgr: dpsData.infDPS.prest.end.xLgr || 'AV. ATILIO ALBERTINI',
+            nro: dpsData.infDPS.prest.end.nro || '0',
+            xCpl: dpsData.infDPS.prest.end.xCpl || 'S/N - PARTE',
+            xBairro: dpsData.infDPS.prest.end.xBairro || 'DISTRITO INDUSTRIAL',
+            cMun: dpsData.infDPS.prest.end.endNac?.cMun || '3542404',
             UF: 'SP',
-            CEP: dpsData.infDPS.prest?.end?.endNac?.CEP || '19570000'
+            CEP: dpsData.infDPS.prest.end.endNac?.CEP || '19570000'
           },
-          fone: dpsData.infDPS.prest?.fone || '1832296800',
-          email: dpsData.infDPS.prest?.email || 'teste@teste.com.br'
+          fone: dpsData.infDPS.prest.fone || '1832296800',
+          email: dpsData.infDPS.prest.email || 'teste@teste.com.br'
         },
         valores: {
           vCalcDR: 0.00,
           vCalcBM: 0.00,
-          vBC: dpsData.infDPS.valores?.vServPrest?.vServ || 0,
-          pAliqAplic: dpsData.infDPS.valores?.trib?.tribMun?.pAliq || 0,
-          vISSQN: (dpsData.infDPS.valores?.vServPrest?.vServ || 0) * (dpsData.infDPS.valores?.trib?.tribMun?.pAliq || 0) / 100,
+          vBC: dpsData.infDPS.valores.vServPrest.vServ || 0,
+          pAliqAplic: dpsData.infDPS.valores.trib.tribMun.pAliq || 0,
+          vISSQN: (dpsData.infDPS.valores.vServPrest.vServ || 0) * (dpsData.infDPS.valores.trib.tribMun.pAliq || 0) / 100,
           vTotalRet: 0.00,
-          vLiq: dpsData.infDPS.valores?.vServPrest?.vServ || 0
+          vLiq: dpsData.infDPS.valores.vServPrest.vServ || 0
         },
         DPS: dpsData
       }
@@ -324,7 +323,7 @@ export default function CompleteNFSeForm({ onXMLGenerated }: CompleteNFSeFormPro
       content: (
         <ValoresForm
           data={formData.infDPS.valores}
-          onChange={(data) => updateFormData('valores', { ...formData.infDPS.valores, ...data })}
+          onChange={(data) => updateFormData('valores', data)}
         />
       )
     }

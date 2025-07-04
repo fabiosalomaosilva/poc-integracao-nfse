@@ -201,6 +201,7 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
+
       .replace(/"/g, '&quot;') // necessário para destacar atributos corretamente
 
       // 🎨 Destaque: declaração XML (<?xml ... ?>)
@@ -234,6 +235,7 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         /(&gt;)([^&]+)(&lt;)/g,
         '$1<span class="text-gray-800">$2</span>$3'
       );
+
   };
 
 
@@ -300,113 +302,124 @@ export default function XMLViewer({ xml }: XMLViewerProps) {
         </div>
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-[600px]">
-        <pre className="text-sm font-mono leading-relaxed whitespace-pre">
+<<<<<<< HEAD
+  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-[600px]">
+    <pre className="text-sm font-mono leading-relaxed whitespace-pre">
+      <code
+        className="text-gray-900 block"
+        style={{
+          fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+          lineHeight: '1.5'
+        }}
+=======
+      <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
+        <pre className="text-sm">
           <code
-            className="text-gray-900 block"
-            style={{
-              fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-              lineHeight: '1.5'
-            }}
-            dangerouslySetInnerHTML={{
-              __html: highlightXML(formatXML(xml))
-            }}
-          />
-        </pre>
-      </div>
+            className="text-gray-100"
+>>>>>>> parent of 9c1619d (Merge pull request #15 from fabiosalomaosilva/add-nfse-xml)
+        dangerouslySetInnerHTML={{
+          __html: highlightXML(formatXML(xml))
+        }}
+      />
+    </pre>
+  </div>
 
-      {sendResult && (
-        <div className={`border rounded-md p-4 ${sendResult.success
-          ? 'bg-green-50 border-green-200'
-          : 'bg-red-50 border-red-200'
-          }`}>
-          <div className="flex items-start">
-            <svg className={`w-5 h-5 mt-0.5 mr-2 ${sendResult.success ? 'text-green-400' : 'text-red-400'
-              }`} fill="currentColor" viewBox="0 0 20 20">
-              {sendResult.success ? (
-                <path fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd" />
-              ) : (
-                <path fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd" />
+  {
+    sendResult && (
+      <div className={`border rounded-md p-4 ${sendResult.success
+        ? 'bg-green-50 border-green-200'
+        : 'bg-red-50 border-red-200'
+        }`}>
+        <div className="flex items-start">
+          <svg className={`w-5 h-5 mt-0.5 mr-2 ${sendResult.success ? 'text-green-400' : 'text-red-400'
+            }`} fill="currentColor" viewBox="0 0 20 20">
+            {sendResult.success ? (
+              <path fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd" />
+            ) : (
+              <path fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd" />
+            )}
+          </svg>
+          <div className="flex-1">
+            <h4 className={`text-sm font-medium ${sendResult.success ? 'text-green-800' : 'text-red-800'
+              }`}>
+              {sendResult.success ? 'Sucesso!' : 'Erro no Envio'}
+            </h4>
+            <div className={`text-sm mt-1 ${sendResult.success ? 'text-green-700' : 'text-red-700'
+              }`}>
+              <pre className="whitespace-pre-wrap">{sendResult.message}</pre>
+              {sendResult.success && sendResult.apiData && (
+                <button
+                  onClick={() => setShowSaveModal(true)}
+                  className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Salvar Teste
+                </button>
               )}
-            </svg>
-            <div className="flex-1">
-              <h4 className={`text-sm font-medium ${sendResult.success ? 'text-green-800' : 'text-red-800'
-                }`}>
-                {sendResult.success ? 'Sucesso!' : 'Erro no Envio'}
-              </h4>
-              <div className={`text-sm mt-1 ${sendResult.success ? 'text-green-700' : 'text-red-700'
-                }`}>
-                <pre className="whitespace-pre-wrap">{sendResult.message}</pre>
-                {sendResult.success && sendResult.apiData && (
-                  <button
-                    onClick={() => setShowSaveModal(true)}
-                    className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    Salvar Teste
-                  </button>
-                )}
-              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )
+  }
 
-      {/* Modal para salvar teste */}
-      {showSaveModal && (
-        <div className="fixed inset-0 bg-gray-600/40 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-35 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Salvar Teste
-              </h3>
-              <div className="mb-4">
-                <label htmlFor="testName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Nome do Teste Realizado
-                </label>
-                <input
-                  type="text"
-                  id="testName"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500 text-gray-700"
-                  placeholder="Digite o nome do teste..."
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const input = e.target as HTMLInputElement;
-                      handleSaveTest(input.value);
-                    }
-                  }}
-                />
-              </div>
-              <div className="flex items-center justify-end space-x-3">
-                <button
-                  onClick={() => setShowSaveModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => {
-                    const input = document.getElementById('testName') as HTMLInputElement;
-                    if (input) {
-                      handleSaveTest(input.value);
-                    }
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  Salvar
-                </button>
-              </div>
+  {/* Modal para salvar teste */ }
+  {
+    showSaveModal && (
+      <div className="fixed inset-0 bg-gray-600/40 overflow-y-auto h-full w-full z-50">
+        <div className="relative top-35 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="mt-3">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Salvar Teste
+            </h3>
+            <div className="mb-4">
+              <label htmlFor="testName" className="block text-sm font-medium text-gray-700 mb-2">
+                Nome do Teste Realizado
+              </label>
+              <input
+                type="text"
+                id="testName"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-500 text-gray-700"
+                placeholder="Digite o nome do teste..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const input = e.target as HTMLInputElement;
+                    handleSaveTest(input.value);
+                  }
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={() => setShowSaveModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  const input = document.getElementById('testName') as HTMLInputElement;
+                  if (input) {
+                    handleSaveTest(input.value);
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                Salvar
+              </button>
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    )
+  }
+    </div >
   );
 }
