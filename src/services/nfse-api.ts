@@ -8,7 +8,6 @@ import {
   PeriodoRequest,
   TesteRequest,
   TesteResponse,
-  NfseDto,
   NfseDtoPaginatedResult,
   CancelarNfseRequest,
   ObjectApiResponse,
@@ -44,7 +43,7 @@ class NFSeApiService {
       const response = await httpClient.get(`${this.baseURL}/api/nfse-data/paginated`, {
         params: { page, pageSize }
       });
-      
+
       return {
         data: response.items || response.data || [],
         totalCount: response.totalCount || 0,
@@ -111,7 +110,7 @@ class NFSeApiService {
       const response = await httpClient.get(`${this.baseURL}/api/Teste/paginated`, {
         params: { page, pageSize }
       });
-      
+
       return {
         data: response.items || response.data || [],
         totalCount: response.totalCount || 0,
@@ -180,7 +179,7 @@ class NFSeApiService {
       const response = await httpClient.get(`${this.baseURL}/api/nfse-data/paginated`, {
         params: { page, pageSize }
       });
-      
+
       return {
         items: response.items || [],
         page: response.page || page,
