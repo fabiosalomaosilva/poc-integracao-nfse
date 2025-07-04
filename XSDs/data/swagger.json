@@ -1,0 +1,1154 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "NFSe Signing API",
+        "description": "API para assinatura digital de XML e envio para API Nacional NFSe. **IMPORTANTE**: Todos os endpoints requerem o header 'X-API-Key' para autenticação.",
+        "contact": {
+            "name": "NFSe Signing API"
+        },
+        "version": "v1"
+    },
+    "paths": {
+        "/api/NFSe/sign-and-send": {
+            "post": {
+                "tags": [
+                    "NFSe"
+                ],
+                "summary": "Assina digitalmente um XML e envia para a API Nacional NFSe",
+                "requestBody": {
+                    "description": "Objeto contendo o conteúdo XML a ser assinado",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/XmlSigningRequest"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/XmlSigningRequest"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/XmlSigningRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "XML processado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/XmlSigningResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro na requisição (XML inválido ou configuração incorreta)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/XmlSigningResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/XmlSigningResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nfse-data/{id}": {
+            "get": {
+                "tags": [
+                    "NfseData"
+                ],
+                "summary": "Obtém um registro de NFSe por ID",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID da NFSe",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDto"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDto"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nfse-data/chave/{chaveAcesso}": {
+            "get": {
+                "tags": [
+                    "NfseData"
+                ],
+                "summary": "Obtém um registro de NFSe por chave de acesso",
+                "parameters": [
+                    {
+                        "name": "chaveAcesso",
+                        "in": "path",
+                        "description": "Chave de acesso da NFSe",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDto"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDto"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nfse-data": {
+            "get": {
+                "tags": [
+                    "NfseData"
+                ],
+                "summary": "Obtém todos os registros de NFSe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nfse-data/paginated": {
+            "get": {
+                "tags": [
+                    "NfseData"
+                ],
+                "summary": "Obtém registros de NFSe paginados",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página (padrão: 1)",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "Itens por página (padrão: 10)",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDtoPaginatedResult"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDtoPaginatedResult"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NfseDtoPaginatedResult"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nfse-data/cadastro/{cadastroNacional}": {
+            "get": {
+                "tags": [
+                    "NfseData"
+                ],
+                "summary": "Obtém registros de NFSe por cadastro nacional",
+                "parameters": [
+                    {
+                        "name": "cadastroNacional",
+                        "in": "path",
+                        "description": "Cadastro nacional (CNPJ/CPF)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/nfse-data/periodo": {
+            "get": {
+                "tags": [
+                    "NfseData"
+                ],
+                "summary": "Obtém registros de NFSe por período de processamento",
+                "parameters": [
+                    {
+                        "name": "dataInicio",
+                        "in": "query",
+                        "description": "Data de início",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "dataFim",
+                        "in": "query",
+                        "description": "Data de fim",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/NfseDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/NfseIntegration/consultar-lote-dfe/{nsu}": {
+            "get": {
+                "tags": [
+                    "NfseIntegration"
+                ],
+                "summary": "Consulta lote de DFe por NSU",
+                "parameters": [
+                    {
+                        "name": "nsu",
+                        "in": "path",
+                        "description": "Número sequencial único",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Lotedfe"
+                                    }
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Lotedfe"
+                                    }
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Lotedfe"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/NfseIntegration/download-danfe/{chaveAcesso}": {
+            "get": {
+                "tags": [
+                    "NfseIntegration"
+                ],
+                "summary": "Faz download do DANFE da NFSe",
+                "parameters": [
+                    {
+                        "name": "chaveAcesso",
+                        "in": "path",
+                        "description": "Chave de acesso da NFSe",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/NfseIntegration/cancelar-nfse": {
+            "post": {
+                "tags": [
+                    "NfseIntegration"
+                ],
+                "summary": "Cancela uma NFSe",
+                "requestBody": {
+                    "description": "Dados para cancelamento",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelarNfseRequest"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelarNfseRequest"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelarNfseRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ObjectApiResponse"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ObjectApiResponse"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ObjectApiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Teste": {
+            "post": {
+                "tags": [
+                    "Teste"
+                ],
+                "summary": "Cria um novo registro de teste",
+                "requestBody": {
+                    "description": "Dados do teste",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TesteCreateRequest"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TesteCreateRequest"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TesteCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Teste"
+                ],
+                "summary": "Obtém todos os registros de teste",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TesteDto"
+                                    }
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TesteDto"
+                                    }
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TesteDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Teste/{id}": {
+            "put": {
+                "tags": [
+                    "Teste"
+                ],
+                "summary": "Atualiza um registro de teste existente",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do teste",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Dados atualizados do teste",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TesteUpdateRequest"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TesteUpdateRequest"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TesteUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Teste"
+                ],
+                "summary": "Obtém um registro de teste por ID",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do teste",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Teste"
+                ],
+                "summary": "Remove um registro de teste",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do teste",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/Teste/paginated": {
+            "get": {
+                "tags": [
+                    "Teste"
+                ],
+                "summary": "Obtém registros de teste paginados",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página (padrão: 1)",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "Itens por página (padrão: 10)",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDtoPaginatedResult"
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDtoPaginatedResult"
+                                }
+                            },
+                            "text/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TesteDtoPaginatedResult"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CancelarNfseRequest": {
+                "required": [
+                    "chaveAcesso",
+                    "xmlCancelamento"
+                ],
+                "type": "object",
+                "properties": {
+                    "chaveAcesso": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "xmlCancelamento": {
+                        "minLength": 1,
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ErroItem": {
+                "type": "object",
+                "properties": {
+                    "mensagem": {
+                        "nullable": true
+                    },
+                    "parametros": {
+                        "nullable": true
+                    },
+                    "codigo": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "descricao": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "complemento": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "LoteItem": {
+                "type": "object",
+                "properties": {
+                    "chaveAcesso": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "nsu": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "statusProcessamento": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "alertas": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "nullable": true
+                    },
+                    "erros": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ErroItem"
+                        },
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "Lotedfe": {
+                "type": "object",
+                "properties": {
+                    "nsu": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "chaveAcesso": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "tipoDocumento": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "tipoEvento": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "arquivoXml": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "dataHoraRecebimento": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "dataHoraGeracao": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "MensagemProcessamento": {
+                "type": "object",
+                "properties": {
+                    "Descricao": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "Codigo": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "Parametros": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "nullable": true
+                    },
+                    "Complemento": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "NfseDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "chaveAcesso": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "cadastroNacional": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "nomeEmitente": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "dataProcessamento": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "cTribNac": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "vServ": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "vbc": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "pAliqAplic": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "vissqn": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "vLiq": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "NfseDtoPaginatedResult": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NfseDto"
+                        },
+                        "nullable": true
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "hasNextPage": {
+                        "type": "boolean"
+                    },
+                    "hasPreviousPage": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ObjectApiResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "nullable": true
+                    },
+                    "errorMessage": {
+                        "$ref": "#/components/schemas/MensagemProcessamento"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "TesteCreateRequest": {
+                "required": [
+                    "chaveAcesso",
+                    "nome",
+                    "xml"
+                ],
+                "type": "object",
+                "properties": {
+                    "nome": {
+                        "maxLength": 255,
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "chaveAcesso": {
+                        "maxLength": 255,
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "xml": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "dataTeste": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "TesteDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "nome": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "chaveAcesso": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "dataTeste": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "xml": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "TesteDtoPaginatedResult": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TesteDto"
+                        },
+                        "nullable": true
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "hasNextPage": {
+                        "type": "boolean"
+                    },
+                    "hasPreviousPage": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "TesteUpdateRequest": {
+                "type": "object",
+                "properties": {
+                    "nome": {
+                        "maxLength": 255,
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "chaveAcesso": {
+                        "maxLength": 255,
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "xml": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "dataTeste": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "XmlSigningRequest": {
+                "type": "object",
+                "properties": {
+                    "xmlContent": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "XmlSigningResponse": {
+                "type": "object",
+                "properties": {
+                    "lote": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LoteItem"
+                        },
+                        "nullable": true
+                    },
+                    "tipoAmbiente": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "versaoAplicativo": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "dataHoraProcessamento": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "securitySchemes": {
+            "ApiKey": {
+                "type": "apiKey",
+                "description": "API Key para autenticação. Exemplo: X-API-Key: sua-chave-aqui",
+                "name": "X-API-Key",
+                "in": "header"
+            }
+        }
+    },
+    "security": [
+        {
+            "ApiKey": []
+        }
+    ]
+}

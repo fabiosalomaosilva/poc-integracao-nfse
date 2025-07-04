@@ -29,6 +29,7 @@ export default function Navigation() {
   const navItems = [
     { href: '/', label: 'Formulário NFSe', icon: 'form' },
     { href: '/nfse', label: 'NFSe', icon: 'document' },
+    { href: '/nsu', label: 'NSU', icon: 'list' },
     { href: '/testes', label: 'Testes Salvos', icon: 'test' },
   ];
 
@@ -50,6 +51,12 @@ export default function Navigation() {
         return (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        );
+      case 'list':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
           </svg>
         );
       default:
@@ -103,11 +110,10 @@ export default function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive(item.href)
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive(item.href)
+                  ? 'text-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
               >
                 {getIcon(item.icon)}
                 <span>{item.label}</span>
@@ -121,7 +127,7 @@ export default function Navigation() {
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <span className="text-sm text-gray-600">API Online</span>
             </div>
-            
+
             {isAuthenticated && user ? (
               <div className="relative" ref={userMenuRef}>
                 <button
@@ -193,11 +199,10 @@ export default function Navigation() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    isActive(item.href)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
+                  className={`flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors ${isActive(item.href)
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
                 >
                   {getIcon(item.icon)}
                   <span>{item.label}</span>
@@ -208,7 +213,7 @@ export default function Navigation() {
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                   <span className="text-sm text-gray-600">API Online</span>
                 </div>
-                
+
                 {isAuthenticated && user ? (
                   <div className="border-t border-gray-200 pt-3">
                     <div className="flex items-center space-x-3 px-3 py-2">
