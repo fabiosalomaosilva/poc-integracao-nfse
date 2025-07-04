@@ -81,3 +81,58 @@ export interface TesteResponse {
   createdAt: string;
   updatedAt?: string;
 }
+
+// Interfaces para NfseIntegration baseadas no swagger
+export interface NfseDto {
+  id: number;
+  createdAt: string;
+  chaveAcesso: string;
+  cadastroNacional: string;
+  nomeEmitente: string;
+  dataProcessamento: string;
+  cTribNac: string;
+  vServ: number;
+  vbc: number;
+  pAliqAplic: number;
+  vissqn: number;
+  vLiq: number;
+}
+
+export interface NfseDtoPaginatedResult {
+  items: NfseDto[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface CancelarNfseRequest {
+  chaveAcesso: string;
+  xmlCancelamento: string;
+}
+
+export interface MensagemProcessamento {
+  Descricao: string;
+  Codigo: string;
+  Parametros?: string[];
+  Complemento?: string;
+}
+
+export interface ObjectApiResponse {
+  success: boolean;
+  data?: any;
+  errorMessage?: MensagemProcessamento;
+  timestamp: string;
+}
+
+export interface Lotedfe {
+  nsu: number;
+  chaveAcesso: string;
+  tipoDocumento: string;
+  tipoEvento: string;
+  arquivoXml: string;
+  dataHoraRecebimento: string;
+  dataHoraGeracao: string;
+}

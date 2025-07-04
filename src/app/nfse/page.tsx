@@ -87,12 +87,6 @@ export default function NFSePage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Chave Acesso
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        CNPJ/CPF
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nome
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -122,13 +116,12 @@ export default function NFSePage() {
                     {nfseData?.data && Array.isArray(nfseData.data) ? nfseData.data.map((nfse) => (
                       <tr key={nfse.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 font-mono">{nfse.chaveAcesso || '-'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{nfse.cadastroNacional || '-'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{nfse.nomeEmitente || '-'}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {nfse.nomeEmitente}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {nfse.cadastroNacional}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{formatDate(nfse.dataProcessamento)}</div>

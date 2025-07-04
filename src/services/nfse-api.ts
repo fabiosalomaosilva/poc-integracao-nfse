@@ -7,7 +7,12 @@ import {
   NfseListResponse,
   PeriodoRequest,
   TesteRequest,
-  TesteResponse
+  TesteResponse,
+  NfseDto,
+  NfseDtoPaginatedResult,
+  CancelarNfseRequest,
+  ObjectApiResponse,
+  Lotedfe
 } from '@/types/nfse-api';
 
 class NFSeApiService {
@@ -136,6 +141,67 @@ class NFSeApiService {
 
   async deleteTeste(id: string): Promise<void> {
     await httpClient.delete(`${this.baseURL}/api/Teste/${id}`);
+  }
+
+  // Métodos do NfseIntegration
+  async consultarLoteDfe(nsu: string): Promise<Lotedfe[]> {
+    try {
+      const response = await httpClient.get(`${this.baseURL}/api/NfseIntegration/consultar-lote-dfe/${nsu}`);
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      console.error('Erro ao consultar lote DFe:', error);
+      return [];
+    }
+  }
+
+  async downloadDanfe(chaveAcesso: string): Promise<Blob> {
+    return await httpClient.get(`${this.baseURL}/api/NfseIntegration/download-danfe/${chaveAcesso}`, {
+      responseType: 'blob'
+    });
+  }
+
+  async visualizarDanfe(chaveAcesso: string): Promise<string> {
+    try {
+      const blob = await this.downloadDanfe(chaveAcesso);
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error('Erro ao visualizar DANFE:', error);
+      throw error;
+    }
+  }
+
+  async cancelarNfse(request: CancelarNfseRequest): Promise<ObjectApiResponse> {
+    return await httpClient.post(`${this.baseURL}/api/NfseIntegration/cancelar-nfse`, request);
+  }
+
+  // Método para obter NFSes usando o endpoint existente mas com tipagem do NfseDto
+  async getPaginatedNfseData(page: number = 1, pageSize: number = 10): Promise<NfseDtoPaginatedResult> {
+    try {
+      const response = await httpClient.get(`${this.baseURL}/api/nfse-data/paginated`, {
+        params: { page, pageSize }
+      });
+      
+      return {
+        items: response.items || [],
+        page: response.page || page,
+        pageSize: response.pageSize || pageSize,
+        totalCount: response.totalCount || 0,
+        totalPages: response.totalPages || 0,
+        hasNextPage: response.hasNextPage || false,
+        hasPreviousPage: response.hasPreviousPage || false,
+      };
+    } catch (error) {
+      console.error('Erro ao buscar NFSe data paginadas:', error);
+      return {
+        items: [],
+        page: page,
+        pageSize: pageSize,
+        totalCount: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+    }
   }
 
   async healthCheck(): Promise<{ status: string; timestamp: string }> {

@@ -63,7 +63,7 @@ export default function TestesPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR');
+    return new Date(dateString).toLocaleDateString();
   };
 
   const formatXML = (xmlString: string): string => {
@@ -72,42 +72,42 @@ export default function TestesPage() {
     try {
       // Limpa o XML removendo espaços extras
       let xml = xmlString.replace(/>\s+</g, '><').trim();
-      
+
       // Quebra por tags
       xml = xml.replace(/></g, '>\n<');
-      
+
       const lines = xml.split('\n');
       const result: string[] = [];
       let indentLevel = 0;
-      
+
       for (const line of lines) {
         const trimmedLine = line.trim();
         if (!trimmedLine) continue;
-        
+
         // Verifica se é uma linha com tag completa (abertura e fechamento na mesma linha)
         const hasCompleteTag = trimmedLine.match(/^<([^\/!?][^>]*)>.*<\/\1>$/);
-        
+
         // Se é tag de fechamento </xxx>, diminui indentação antes
         if (trimmedLine.startsWith('</')) {
           indentLevel = Math.max(0, indentLevel - 1);
         }
-        
+
         // Aplica indentação
         const indent = '  '.repeat(indentLevel);
         result.push(indent + trimmedLine);
-        
+
         // Se é tag de abertura <xxx> (não self-closing e não declaração XML), aumenta indentação depois
         // Mas se for uma tag completa na mesma linha, não aumenta indentação
-        if (trimmedLine.startsWith('<') && 
-            !trimmedLine.startsWith('</') && 
-            !trimmedLine.endsWith('/>') && 
-            !trimmedLine.startsWith('<?xml') &&
-            !trimmedLine.startsWith('<!--') &&
-            !hasCompleteTag) {
+        if (trimmedLine.startsWith('<') &&
+          !trimmedLine.startsWith('</') &&
+          !trimmedLine.endsWith('/>') &&
+          !trimmedLine.startsWith('<?xml') &&
+          !trimmedLine.startsWith('<!--') &&
+          !hasCompleteTag) {
           indentLevel++;
         }
       }
-      
+
       return result.join('\n');
     } catch (error) {
       console.warn('Erro ao formatar XML:', error);
@@ -371,8 +371,8 @@ export default function TestesPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600/40 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-40 mx-auto p-5 border w-[450px] shadow-lg rounded-md bg-white">
             <div className="mt-3 text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                 <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
